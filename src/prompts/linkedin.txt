@@ -1,0 +1,2 @@
+PLACEHOLDER — paste LinkedIn post prompt here, then save via /settings/prompts.
+Host: {{host_name}}

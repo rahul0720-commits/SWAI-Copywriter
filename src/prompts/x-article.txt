@@ -1,0 +1,2 @@
+PLACEHOLDER — paste X Article prompt here, then save via /settings/prompts.
+Host: {{host_name}}

@@ -1,6 +1,14 @@
 import { Router } from 'express';
 import db from '../db.js';
-import { generateAllContent } from '../services/claude.js';
+import {
+  generateAllContent,
+  generateRahulX,
+  generateGauthamX,
+  generateBrandX,
+  generateXArticle,
+  generateLinkedIn,
+  generateYouTube,
+} from '../services/claude.js';
 
 const router = Router();
 
@@ -11,23 +19,21 @@ router.post('/:id/generate', async (req, res, next) => {
     if (!episode.transcript_clean) return res.status(400).send('No transcript available');
 
     const metadata = { title: episode.title, guestName: episode.guest_name };
-    const content = await generateAllContent(episode.transcript_clean, metadata);
+    const hostName = req.body.host_name || 'Rahul';
+    const content = await generateAllContent(episode.transcript_clean, metadata, hostName);
 
     db.prepare(
       `UPDATE episodes SET
-        blog_post = ?,
-        twitter_thread = ?,
-        linkedin_post = ?,
-        substack_draft = ?,
-        youtube_options = ?,
+        rahul_x = ?, gautham_x = ?, brand_x = ?, x_article = ?, linkedin_post = ?, youtube = ?,
         updated_at = datetime('now')
        WHERE id = ?`
     ).run(
-      content.blogPost,
-      JSON.stringify(content.twitterThread),
-      content.linkedinPost,
-      content.substackDraft,
-      JSON.stringify(content.youtubeOptions),
+      content.rahulX,
+      content.gauthamX,
+      content.brandX,
+      content.xArticle,
+      content.linkedInPost,
+      content.youtube,
       req.params.id
     );
 
@@ -37,41 +43,33 @@ router.post('/:id/generate', async (req, res, next) => {
   }
 });
 
+const PLATFORM_MAP = {
+  'rahul-x':   { fn: (t, m, b) => generateRahulX(t, m),              col: 'rahul_x' },
+  'gautham-x': { fn: (t, m, b) => generateGauthamX(t, m, b.mode),    col: 'gautham_x' },
+  'brand-x':   { fn: (t, m, b) => generateBrandX(t, m),              col: 'brand_x' },
+  'x-article': { fn: (t, m, b) => generateXArticle(t, m, b.hostName), col: 'x_article' },
+  'linkedin':  { fn: (t, m, b) => generateLinkedIn(t, m, b.hostName), col: 'linkedin_post' },
+  'youtube':   { fn: (t, m, b) => generateYouTube(t, m),             col: 'youtube' },
+};
+
 router.post('/:id/regenerate/:platform', async (req, res, next) => {
   try {
     const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);
     if (!episode) return res.status(404).send('Episode not found');
+    if (!episode.transcript_clean) return res.status(400).send('No transcript available');
+
+    const entry = PLATFORM_MAP[req.params.platform];
+    if (!entry) return res.status(400).send('Invalid platform');
 
     const metadata = { title: episode.title, guestName: episode.guest_name };
-    const { platform } = req.params;
+    const extras = {
+      mode:     req.body.mode     || 'full',
+      hostName: req.body.host_name || 'Rahul',
+    };
 
-    let content;
-    let column;
-
-    if (platform === 'blog') {
-      const { generateBlogPost } = await import('../services/claude.js');
-      content = await generateBlogPost(episode.transcript_clean, metadata);
-      column = 'blog_post';
-    } else if (platform === 'twitter') {
-      const { generateTwitterThread } = await import('../services/claude.js');
-      content = JSON.stringify(await generateTwitterThread(episode.transcript_clean, metadata));
-      column = 'twitter_thread';
-    } else if (platform === 'linkedin') {
-      const { generateLinkedInPost } = await import('../services/claude.js');
-      content = await generateLinkedInPost(episode.transcript_clean, metadata);
-      column = 'linkedin_post';
-    } else if (platform === 'youtube') {
-      const { generateYouTubeOptions } = await import('../services/claude.js');
-      content = JSON.stringify(await generateYouTubeOptions(episode.transcript_clean, metadata));
-      column = 'youtube_options';
-    } else {
-      return res.status(400).send('Invalid platform');
-    }
-
-    db.prepare(`UPDATE episodes SET ${column} = ?, updated_at = datetime('now') WHERE id = ?`).run(
-      content,
-      req.params.id
-    );
+    const content = await entry.fn(episode.transcript_clean, metadata, extras);
+    db.prepare(`UPDATE episodes SET ${entry.col} = ?, updated_at = datetime('now') WHERE id = ?`)
+      .run(content, req.params.id);
 
     res.redirect(`/episodes/${req.params.id}/review`);
   } catch (err) {

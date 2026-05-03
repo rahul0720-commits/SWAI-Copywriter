@@ -1,0 +1,2 @@
+PLACEHOLDER — paste Gautham's Personal X prompt here, then save via /settings/prompts.
+Mode: {{mode}}

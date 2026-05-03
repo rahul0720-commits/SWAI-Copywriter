@@ -8,10 +8,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const promptsDir = join(__dirname, '..', 'prompts');
 
 const PROMPTS = [
-  { name: 'blog-post',       label: 'Blog Post',       file: 'blog-post.txt' },
-  { name: 'twitter-thread',  label: 'Twitter Thread',  file: 'twitter-thread.txt' },
-  { name: 'linkedin-post',   label: 'LinkedIn Post',   file: 'linkedin-post.txt' },
-  { name: 'youtube-options', label: 'YouTube Options', file: 'youtube-options.txt' },
+  { name: 'rahul-x',   label: "Rahul's X",       file: 'rahul-x.txt' },
+  { name: 'gautham-x', label: "Gautham's X",      file: 'gautham-x.txt' },
+  { name: 'brand-x',   label: 'Brand X',          file: 'brand-x.txt' },
+  { name: 'x-article', label: 'X Article',        file: 'x-article.txt' },
+  { name: 'linkedin',  label: 'LinkedIn',         file: 'linkedin.txt' },
+  { name: 'youtube',   label: 'YouTube',          file: 'youtube.txt' },
 ];
 
 const router = Router();

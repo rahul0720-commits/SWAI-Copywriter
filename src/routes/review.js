@@ -1,70 +1,53 @@
 import { Router } from 'express';
 import db from '../db.js';
-import { config } from '../config.js';
 import { isConnected as twitterConnected } from '../services/twitter.js';
 import { isConnected as linkedinConnected } from '../services/linkedin.js';
 
 const router = Router();
 
+const APPROVED_BADGE = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>`;
+const SAVED_BADGE    = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Saved — re-approve</span>`;
+
+const COLUMN_MAP = {
+  'rahul-x':   { col: 'rahul_x',      approved: 'rahul_x_approved' },
+  'gautham-x': { col: 'gautham_x',    approved: 'gautham_x_approved' },
+  'brand-x':   { col: 'brand_x',      approved: 'brand_x_approved' },
+  'x-article': { col: 'x_article',    approved: 'x_article_approved' },
+  'linkedin':  { col: 'linkedin_post', approved: 'linkedin_approved' },
+  'youtube':   { col: 'youtube',       approved: 'youtube_approved' },
+};
+
 router.get('/:id/review', (req, res) => {
   const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);
   if (!episode) return res.status(404).send('Episode not found');
 
-  let twitterThread = [];
-  try { twitterThread = episode.twitter_thread ? JSON.parse(episode.twitter_thread) : []; } catch { twitterThread = []; }
-
-  let youtubeOptions = { titles: [], thumbnails: [] };
-  try { youtubeOptions = episode.youtube_options ? JSON.parse(episode.youtube_options) : { titles: [], thumbnails: [] }; } catch { youtubeOptions = { titles: [], thumbnails: [] }; }
-
   res.render('review', {
     title: `Review: ${episode.title}`,
     episode,
-    twitterThread,
-    youtubeOptions,
     twitterConnected: twitterConnected(),
     linkedinConnected: linkedinConnected(),
-    substackUrl: config.substackUrl,
   });
 });
 
 router.post('/:id/approve/:platform', (req, res) => {
-  const { platform } = req.params;
-  const validPlatforms = ['blog', 'twitter', 'linkedin', 'substack', 'youtube'];
-  if (!validPlatforms.includes(platform)) return res.status(400).send('Invalid platform');
+  const entry = COLUMN_MAP[req.params.platform];
+  if (!entry) return res.status(400).send('Invalid platform');
 
-  db.prepare(`UPDATE episodes SET ${platform}_approved = 1, updated_at = datetime('now') WHERE id = ?`).run(
-    req.params.id
-  );
+  db.prepare(`UPDATE episodes SET ${entry.approved} = 1, updated_at = datetime('now') WHERE id = ?`)
+    .run(req.params.id);
 
-  if (req.headers['hx-request']) {
-    return res.send('<span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>');
-  }
+  if (req.headers['hx-request']) return res.send(APPROVED_BADGE);
   res.redirect(`/episodes/${req.params.id}/review`);
 });
 
 router.post('/:id/edit/:platform', (req, res) => {
-  const { platform } = req.params;
-  const { content } = req.body;
+  const entry = COLUMN_MAP[req.params.platform];
+  if (!entry) return res.status(400).send('Invalid platform');
 
-  const columnMap = {
-    blog: 'blog_post',
-    twitter: 'twitter_thread',
-    linkedin: 'linkedin_post',
-    substack: 'substack_draft',
-    youtube: 'youtube_options',
-  };
+  db.prepare(`UPDATE episodes SET ${entry.col} = ?, ${entry.approved} = 0, updated_at = datetime('now') WHERE id = ?`)
+    .run(req.body.content, req.params.id);
 
-  const column = columnMap[platform];
-  if (!column) return res.status(400).send('Invalid platform');
-
-  db.prepare(`UPDATE episodes SET ${column} = ?, ${platform}_approved = 0, updated_at = datetime('now') WHERE id = ?`).run(
-    content,
-    req.params.id
-  );
-
-  if (req.headers['hx-request']) {
-    return res.send('<span class="inline-block px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Saved (re-approve)</span>');
-  }
+  if (req.headers['hx-request']) return res.send(SAVED_BADGE);
   res.redirect(`/episodes/${req.params.id}/review`);
 });
 

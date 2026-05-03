@@ -10,135 +10,93 @@ const promptsDir = join(__dirname, '..', 'prompts');
 
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
 
-function loadPrompt(name, filename) {
-  // Check DB for a custom prompt first
+function loadPrompt(name, filename, subs = {}) {
   const row = db.prepare('SELECT content FROM prompts WHERE name = ?').get(name);
-  if (row) return row.content;
-  // Fall back to the .txt file
-  return readFileSync(join(promptsDir, filename), 'utf-8');
+  let prompt = row ? row.content : readFileSync(join(promptsDir, filename), 'utf-8');
+  for (const [k, v] of Object.entries(subs)) {
+    prompt = prompt.replaceAll(`{{${k}}}`, v);
+  }
+  return prompt;
 }
 
-/**
- * Generate a long-form blog post from transcript
- */
-export async function generateBlogPost(transcript, metadata) {
-  const systemPrompt = loadPrompt('blog-post', 'blog-post.txt');
+function userMessage(transcript, metadata) {
+  return `Episode: "${metadata.title}"${metadata.guestName ? ` with ${metadata.guestName}` : ''}\n\nTranscript:\n${transcript}`;
+}
+
+export async function generateRahulX(transcript, metadata) {
+  const system = loadPrompt('rahul-x', 'rahul-x.txt');
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
+  });
+  return response.content[0].text;
+}
+
+export async function generateGauthamX(transcript, metadata, mode = 'full') {
+  const system = loadPrompt('gautham-x', 'gautham-x.txt', { mode });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
+  });
+  return response.content[0].text;
+}
+
+export async function generateBrandX(transcript, metadata) {
+  const system = loadPrompt('brand-x', 'brand-x.txt');
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
+  });
+  return response.content[0].text;
+}
+
+export async function generateXArticle(transcript, metadata, hostName = 'Rahul') {
+  const system = loadPrompt('x-article', 'x-article.txt', { host_name: hostName });
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 4096,
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Episode: "${metadata.title}"${metadata.guestName ? ` with ${metadata.guestName}` : ''}\n\nTranscript:\n${transcript}`,
-      },
-    ],
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
   });
   return response.content[0].text;
 }
 
-/**
- * Generate a Twitter/X thread from transcript
- * Returns a JSON array of tweet strings
- */
-export async function generateTwitterThread(transcript, metadata) {
-  const systemPrompt = loadPrompt('twitter-thread', 'twitter-thread.txt');
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Episode: "${metadata.title}"${metadata.guestName ? ` with ${metadata.guestName}` : ''}\n\nTranscript:\n${transcript}`,
-      },
-    ],
-  });
-  // Parse the JSON array from the response
-  const text = response.content[0].text;
-  try {
-    // Try to extract JSON array from the response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    // Fallback: split by numbered lines
-    return text
-      .split(/\n\d+[\.\)]\s*/)
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0 && t.length <= 280);
-  } catch {
-    return [text.slice(0, 280)];
-  }
-}
-
-/**
- * Generate a LinkedIn post from transcript
- */
-export async function generateLinkedInPost(transcript, metadata) {
-  const systemPrompt = loadPrompt('linkedin-post', 'linkedin-post.txt');
+export async function generateLinkedIn(transcript, metadata, hostName = 'Rahul') {
+  const system = loadPrompt('linkedin', 'linkedin.txt', { host_name: hostName });
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Episode: "${metadata.title}"${metadata.guestName ? ` with ${metadata.guestName}` : ''}\n\nTranscript:\n${transcript}`,
-      },
-    ],
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
   });
   return response.content[0].text;
 }
 
-/**
- * Generate YouTube title options and thumbnail text options from transcript
- * Returns a JSON object with titles[] and thumbnails[]
- */
-export async function generateYouTubeOptions(transcript, metadata) {
-  const systemPrompt = loadPrompt('youtube-options', 'youtube-options.txt');
+export async function generateYouTube(transcript, metadata) {
+  const system = loadPrompt('youtube', 'youtube.txt');
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 2048,
-    system: systemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Episode: "${metadata.title}"${metadata.guestName ? ` with ${metadata.guestName}` : ''}\n\nTranscript:\n${transcript}`,
-      },
-    ],
+    system,
+    messages: [{ role: 'user', content: userMessage(transcript, metadata) }],
   });
-  const text = response.content[0].text;
-  try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    return { titles: [], thumbnails: [] };
-  } catch {
-    return { titles: [], thumbnails: [], raw: text };
-  }
+  return response.content[0].text;
 }
 
-/**
- * Generate all content in parallel
- */
-export async function generateAllContent(transcript, metadata) {
-  const [blogPost, twitterThread, linkedinPost, youtubeOptions] = await Promise.all([
-    generateBlogPost(transcript, metadata),
-    generateTwitterThread(transcript, metadata),
-    generateLinkedInPost(transcript, metadata),
-    generateYouTubeOptions(transcript, metadata),
+export async function generateAllContent(transcript, metadata, hostName = 'Rahul') {
+  const [rahulX, gauthamX, brandX, xArticle, linkedInPost, youtube] = await Promise.all([
+    generateRahulX(transcript, metadata),
+    generateGauthamX(transcript, metadata, 'full'),
+    generateBrandX(transcript, metadata),
+    generateXArticle(transcript, metadata, hostName),
+    generateLinkedIn(transcript, metadata, hostName),
+    generateYouTube(transcript, metadata),
   ]);
-
-  // Derive Substack draft from blog post with newsletter formatting
-  const substackDraft = `# ${metadata.title}\n\n${blogPost}\n\n---\n\n*Listen to the full episode for the complete conversation.*`;
-
-  return {
-    blogPost,
-    twitterThread,
-    linkedinPost,
-    substackDraft,
-    youtubeOptions,
-  };
+  return { rahulX, gauthamX, brandX, xArticle, linkedInPost, youtube };
 }

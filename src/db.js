@@ -19,18 +19,17 @@ db.exec(`
     recording_date TEXT,
     transcript_raw TEXT,
     transcript_clean TEXT,
-    blog_post TEXT,
-    twitter_thread TEXT,
+    rahul_x TEXT,
+    gautham_x TEXT,
+    brand_x TEXT,
+    x_article TEXT,
     linkedin_post TEXT,
-    substack_draft TEXT,
-    blog_approved INTEGER DEFAULT 0,
-    twitter_approved INTEGER DEFAULT 0,
+    youtube TEXT,
+    rahul_x_approved INTEGER DEFAULT 0,
+    gautham_x_approved INTEGER DEFAULT 0,
+    brand_x_approved INTEGER DEFAULT 0,
+    x_article_approved INTEGER DEFAULT 0,
     linkedin_approved INTEGER DEFAULT 0,
-    substack_approved INTEGER DEFAULT 0,
-    twitter_published INTEGER DEFAULT 0,
-    linkedin_published INTEGER DEFAULT 0,
-    substack_status TEXT DEFAULT 'draft',
-    youtube_options TEXT,
     youtube_approved INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
@@ -63,5 +62,24 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   );
 `);
+
+// Add new columns to existing DBs (ALTER TABLE ignores duplicates via try/catch)
+const newCols = [
+  ['rahul_x', 'TEXT'],
+  ['gautham_x', 'TEXT'],
+  ['brand_x', 'TEXT'],
+  ['x_article', 'TEXT'],
+  ['linkedin_post', 'TEXT'],
+  ['youtube', 'TEXT'],
+  ['rahul_x_approved', 'INTEGER DEFAULT 0'],
+  ['gautham_x_approved', 'INTEGER DEFAULT 0'],
+  ['brand_x_approved', 'INTEGER DEFAULT 0'],
+  ['x_article_approved', 'INTEGER DEFAULT 0'],
+  ['linkedin_approved', 'INTEGER DEFAULT 0'],
+  ['youtube_approved', 'INTEGER DEFAULT 0'],
+];
+for (const [col, type] of newCols) {
+  try { db.exec(`ALTER TABLE episodes ADD COLUMN ${col} ${type}`); } catch { /* already exists */ }
+}
 
 export default db;
