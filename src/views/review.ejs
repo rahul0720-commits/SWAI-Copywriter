@@ -1,301 +1,376 @@
 <%- include('partials/head', { title: 'Review: ' + episode.title }) %>
 
-<div class="mb-6">
-  <a href="/" class="text-sm text-indigo-600 hover:underline">&larr; Back to episodes</a>
+<!-- Loading overlay (shown during Generate) -->
+<div id="loading-overlay" class="loading-overlay" style="display:none;">
+  <div class="spinner"></div>
+  <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">Generating content…</p>
+  <p style="font-family:'Work Sans',sans-serif;font-size:14px;color:#777587;margin:0;">Claude is writing your blog post, tweets, LinkedIn post, and more. This takes 30–60 seconds.</p>
 </div>
 
-<div class="flex items-center justify-between mb-6">
+<!-- Back -->
+<div style="margin-bottom:24px;">
+  <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#4f46e5'" onmouseout="this.style.color='#777587'">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    All episodes
+  </a>
+</div>
+
+<!-- Episode header -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;">
   <div>
-    <h1 class="text-2xl font-bold"><%= episode.title %></h1>
-    <p class="text-sm text-gray-500 mt-1">
+    <h1 style="font-family:'Inter',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
+    <p style="font-family:'Work Sans',sans-serif;font-size:14px;color:#777587;margin:0;">
       <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
-      <%= new Date(episode.created_at).toLocaleDateString() %>
+      <%= new Date(episode.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
     </p>
   </div>
-  <div class="flex gap-3">
+  <div style="display:flex;gap:10px;flex-shrink:0;">
     <% if (!episode.blog_post) { %>
-      <form action="/episodes/<%= episode.id %>/generate" method="POST">
-        <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+      <form action="/episodes/<%= episode.id %>/generate" method="POST" id="generate-form">
+        <button type="submit" onclick="showLoading()" style="display:flex;align-items:center;gap:8px;background:#4f46e5;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           Generate All Content
         </button>
       </form>
     <% } else { %>
       <form action="/episodes/<%= episode.id %>/publish" method="POST" hx-post="/episodes/<%= episode.id %>/publish" hx-target="#publish-results" hx-swap="innerHTML">
-        <button type="submit" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+        <button type="submit" style="display:flex;align-items:center;gap:8px;background:#059669;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
           Publish Approved
         </button>
       </form>
     <% } %>
+    <form action="/episodes/<%= episode.id %>/delete" method="POST" onsubmit="return confirm('Delete this episode?')">
+      <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#777587;padding:10px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;" title="Delete episode">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+      </button>
+    </form>
   </div>
 </div>
 
 <!-- Publish results -->
-<div id="publish-results" class="mb-4"></div>
+<div id="publish-results" style="margin-bottom:16px;"></div>
 
 <% if (episode.blog_post) { %>
+
+<!-- Status pipeline -->
+<div style="display:flex;gap:6px;margin-bottom:24px;padding:16px;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;align-items:center;flex-wrap:wrap;">
+  <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;margin-right:8px;">Content status</span>
+  <%
+    const statuses = [
+      { label: 'Blog', approved: episode.blog_approved },
+      { label: 'Twitter', approved: episode.twitter_approved, published: episode.twitter_published },
+      { label: 'LinkedIn', approved: episode.linkedin_approved, published: episode.linkedin_published },
+      { label: 'Substack', approved: episode.substack_approved },
+      { label: 'YouTube', approved: episode.youtube_approved },
+    ];
+  %>
+  <% statuses.forEach(s => { %>
+    <%
+      let c, bg, dot;
+      if (s.published) { c='#3525cd'; bg='#e2dfff'; dot='#4f46e5'; }
+      else if (s.approved) { c='#065f46'; bg='#d1fae5'; dot='#059669'; }
+      else { c='#777587'; bg='#f0e6e0'; dot='#c7c4d8'; }
+    %>
+    <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:<%= c %>;background:<%= bg %>;padding:4px 10px;border-radius:99px;">
+      <span style="width:7px;height:7px;border-radius:50%;background:<%= dot %>;flex-shrink:0;"></span>
+      <%= s.label %>
+    </span>
+  <% }) %>
+</div>
+
 <!-- Tabs -->
-<div class="border-b border-gray-200 mb-6">
-  <div class="flex gap-6">
-    <button onclick="switchTab('blog')" class="tab-btn active pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700" id="tab-blog">Blog Post</button>
-    <button onclick="switchTab('twitter')" class="tab-btn pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700" id="tab-twitter">Twitter Thread</button>
-    <button onclick="switchTab('linkedin')" class="tab-btn pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700" id="tab-linkedin">LinkedIn Post</button>
-    <button onclick="switchTab('substack')" class="tab-btn pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700" id="tab-substack">Substack</button>
-    <button onclick="switchTab('youtube')" class="tab-btn pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700" id="tab-youtube">YouTube</button>
-  </div>
+<div style="border-bottom:1px solid #c7c4d8;margin-bottom:24px;display:flex;gap:4px;">
+  <% const tabs = ['blog','twitter','linkedin','substack','youtube']; %>
+  <% const tabLabels = { blog:'Blog Post', twitter:'Twitter Thread', linkedin:'LinkedIn Post', substack:'Substack', youtube:'YouTube' }; %>
+  <% tabs.forEach((t, i) => { %>
+    <button onclick="switchTab('<%= t %>')" class="tab-btn <%= i===0 ? 'active' : '' %>" id="tab-<%= t %>" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">
+      <%= tabLabels[t] %>
+    </button>
+  <% }) %>
 </div>
 
 <!-- Blog Post Tab -->
 <div class="tab-panel active" id="panel-blog">
-  <div class="bg-white rounded-xl border border-gray-200 p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">Blog Post</h2>
-      <div class="flex items-center gap-3">
+  <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">Blog Post</h2>
+      <div style="display:flex;align-items:center;gap:10px;">
         <span id="status-blog">
-          <% if (episode.blog_approved) { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>
-          <% } else { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">Draft</span>
-          <% } %>
+          <%- episode.blog_approved
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/blog" method="POST" class="inline">
-          <button type="submit" class="text-sm text-indigo-600 hover:underline">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/blog" hx-target="#status-blog" hx-swap="innerHTML" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/blog" hx-target="#status-blog" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <div class="prose prose-sm max-w-none mb-4 p-4 bg-gray-50 rounded-lg whitespace-pre-wrap"><%= episode.blog_post %></div>
-    <details class="mt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Edit content</summary>
-      <form hx-post="/episodes/<%= episode.id %>/edit/blog" hx-target="#status-blog" hx-swap="innerHTML" class="mt-3">
-        <textarea name="content" rows="12" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"><%= episode.blog_post %></textarea>
-        <button type="submit" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Save Changes</button>
-      </form>
-    </details>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
+        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;padding-right:8px;"><%= episode.blog_post %></div>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
+        <form hx-post="/episodes/<%= episode.id %>/edit/blog" hx-target="#status-blog" hx-swap="innerHTML">
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.blog_post %></textarea>
+          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Twitter Thread Tab -->
 <div class="tab-panel" id="panel-twitter">
-  <div class="bg-white rounded-xl border border-gray-200 p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">Twitter Thread (<%= twitterThread.length %> tweets)</h2>
-      <div class="flex items-center gap-3">
+  <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">Twitter Thread <span style="color:#777587;font-weight:400;font-size:13px;">(<%= twitterThread.length %> tweets)</span></h2>
+      <div style="display:flex;align-items:center;gap:10px;">
         <% if (!twitterConnected) { %>
-          <span class="text-xs text-red-500">Not connected</span>
+          <span style="font-size:12px;color:#ba1a1a;font-weight:500;">Not connected</span>
+        <% } %>
+        <% if (episode.twitter_published) { %>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#3525cd;background:#e2dfff;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></span>Published</span>
         <% } %>
         <span id="status-twitter">
-          <% if (episode.twitter_approved) { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>
-          <% } else { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">Draft</span>
-          <% } %>
+          <%- episode.twitter_approved
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
-        <% if (episode.twitter_published) { %>
-          <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Published</span>
-        <% } %>
         <form action="/episodes/<%= episode.id %>/regenerate/twitter" method="POST" class="inline">
-          <button type="submit" class="text-sm text-indigo-600 hover:underline">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/twitter" hx-target="#status-twitter" hx-swap="innerHTML" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/twitter" hx-target="#status-twitter" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <div class="space-y-3">
-      <% twitterThread.forEach((tweet, i) => { %>
-        <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-indigo-300">
-          <div class="flex justify-between items-start">
-            <span class="text-xs text-gray-400 font-mono"><%= i + 1 %>/<%= twitterThread.length %></span>
-            <span class="text-xs text-gray-400"><%= tweet.length %>/280</span>
-          </div>
-          <p class="mt-1 whitespace-pre-wrap"><%= tweet %></p>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <!-- Preview -->
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <% twitterThread.forEach((tweet, i) => { %>
+            <div style="padding:14px 16px;background:#fcf2eb;border-radius:8px;border-left:3px solid #4f46e5;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:11px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;"><%= i+1 %>/<%= twitterThread.length %></span>
+                <span style="font-size:11px;color:<%= tweet.length > 260 ? '#ba1a1a' : '#777587' %>;font-family:'Inter',sans-serif;"><%= tweet.length %>/280</span>
+              </div>
+              <p style="font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;margin:0;white-space:pre-wrap;"><%= tweet %></p>
+            </div>
+          <% }) %>
         </div>
-      <% }) %>
+      </div>
+      <!-- Edit: individual tweet textareas -->
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit Tweets</p>
+        <form id="twitter-edit-form" hx-post="/episodes/<%= episode.id %>/edit/twitter" hx-target="#status-twitter" hx-swap="innerHTML" onsubmit="serializeTweets(event)">
+          <input type="hidden" name="content" id="twitter-json-content">
+          <div id="tweet-editor" style="display:flex;flex-direction:column;gap:10px;">
+            <% twitterThread.forEach((tweet, i) => { %>
+              <div style="position:relative;">
+                <div style="position:absolute;top:10px;left:12px;font-size:11px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;z-index:1;"><%= i+1 %></div>
+                <textarea class="tweet-textarea" rows="4" style="width:100%;padding:10px 12px 10px 28px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.5;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= tweet %></textarea>
+                <div class="tweet-count" style="font-size:11px;color:#777587;text-align:right;font-family:'Inter',sans-serif;margin-top:2px;"></div>
+              </div>
+            <% }) %>
+          </div>
+          <button type="submit" style="margin-top:12px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Thread</button>
+        </form>
+      </div>
     </div>
-    <details class="mt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Edit thread (JSON)</summary>
-      <form hx-post="/episodes/<%= episode.id %>/edit/twitter" hx-target="#status-twitter" hx-swap="innerHTML" class="mt-3">
-        <textarea name="content" rows="8" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"><%= JSON.stringify(twitterThread, null, 2) %></textarea>
-        <button type="submit" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Save Changes</button>
-      </form>
-    </details>
   </div>
 </div>
 
 <!-- LinkedIn Post Tab -->
 <div class="tab-panel" id="panel-linkedin">
-  <div class="bg-white rounded-xl border border-gray-200 p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">LinkedIn Post</h2>
-      <div class="flex items-center gap-3">
+  <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">LinkedIn Post</h2>
+      <div style="display:flex;align-items:center;gap:10px;">
         <% if (!linkedinConnected) { %>
-          <span class="text-xs text-red-500">Not connected</span>
+          <span style="font-size:12px;color:#ba1a1a;font-weight:500;">Not connected</span>
+        <% } %>
+        <% if (episode.linkedin_published) { %>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#3525cd;background:#e2dfff;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></span>Published</span>
         <% } %>
         <span id="status-linkedin">
-          <% if (episode.linkedin_approved) { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>
-          <% } else { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">Draft</span>
-          <% } %>
+          <%- episode.linkedin_approved
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
-        <% if (episode.linkedin_published) { %>
-          <span class="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Published</span>
-        <% } %>
         <form action="/episodes/<%= episode.id %>/regenerate/linkedin" method="POST" class="inline">
-          <button type="submit" class="text-sm text-indigo-600 hover:underline">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <div class="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap"><%= episode.linkedin_post %></div>
-    <p class="text-xs text-gray-400 mt-2"><%= (episode.linkedin_post || '').length %> characters</p>
-    <details class="mt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Edit content</summary>
-      <form hx-post="/episodes/<%= episode.id %>/edit/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" class="mt-3">
-        <textarea name="content" rows="8" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"><%= episode.linkedin_post %></textarea>
-        <button type="submit" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Save Changes</button>
-      </form>
-    </details>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
+        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;"><%= episode.linkedin_post %></div>
+        <p style="font-size:12px;color:#777587;margin:8px 0 0;font-family:'Inter',sans-serif;"><%= (episode.linkedin_post || '').length %> characters</p>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
+        <form hx-post="/episodes/<%= episode.id %>/edit/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML">
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.linkedin_post %></textarea>
+          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Substack Tab -->
 <div class="tab-panel" id="panel-substack">
-  <div class="bg-white rounded-xl border border-gray-200 p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">Substack Draft</h2>
-      <div class="flex items-center gap-3">
+  <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">Substack Draft</h2>
+      <div style="display:flex;align-items:center;gap:10px;">
         <span id="status-substack">
-          <% if (episode.substack_approved) { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>
-          <% } else { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">Draft</span>
-          <% } %>
+          <%- episode.substack_approved
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
-        <button hx-post="/episodes/<%= episode.id %>/approve/substack" hx-target="#status-substack" hx-swap="innerHTML" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/substack" hx-target="#status-substack" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <div class="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap mb-4"><%= episode.substack_draft %></div>
-    <div class="flex gap-3">
-      <button onclick="copyToClipboard()" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 font-medium">
-        Copy to Clipboard
-      </button>
-      <% if (substackUrl) { %>
-        <a href="<%= substackUrl %>/publish" target="_blank" class="px-4 py-2 bg-orange-50 text-orange-700 rounded-lg text-sm hover:bg-orange-100 font-medium">
-          Open Substack Editor &rarr;
-        </a>
-      <% } %>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
+        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;" id="substack-content"><%= episode.substack_draft %></div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button onclick="copySubstack()" style="display:flex;align-items:center;gap:7px;background:#a44100;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy to Clipboard
+          </button>
+          <% if (substackUrl) { %>
+            <a href="<%= substackUrl %>/publish" target="_blank" style="display:flex;align-items:center;gap:7px;background:#fcf2eb;color:#a44100;border:1px solid #ffd2be;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;text-decoration:none;">
+              Open Substack →
+            </a>
+          <% } %>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
+        <form hx-post="/episodes/<%= episode.id %>/edit/substack" hx-target="#status-substack" hx-swap="innerHTML">
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.substack_draft %></textarea>
+          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+        </form>
+      </div>
     </div>
-    <details class="mt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Edit content</summary>
-      <form hx-post="/episodes/<%= episode.id %>/edit/substack" hx-target="#status-substack" hx-swap="innerHTML" class="mt-3">
-        <textarea name="content" rows="12" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"><%= episode.substack_draft %></textarea>
-        <button type="submit" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Save Changes</button>
-      </form>
-    </details>
   </div>
 </div>
 
 <!-- YouTube Tab -->
 <div class="tab-panel" id="panel-youtube">
-  <div class="bg-white rounded-xl border border-gray-200 p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold">YouTube Title & Thumbnail Options</h2>
-      <div class="flex items-center gap-3">
+  <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">YouTube Title &amp; Thumbnail Options</h2>
+      <div style="display:flex;align-items:center;gap:10px;">
         <span id="status-youtube">
-          <% if (episode.youtube_approved) { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>
-          <% } else { %>
-            <span class="inline-block px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">Draft</span>
-          <% } %>
+          <%- episode.youtube_approved
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
+            : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/youtube" method="POST" class="inline">
-          <button type="submit" class="text-sm text-indigo-600 hover:underline">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-
-    <!-- Title Options -->
-    <div class="mb-8">
-      <h3 class="text-md font-semibold text-gray-700 mb-3">Title Options (ranked by CTR potential)</h3>
-      <div class="space-y-3">
+    <div style="padding:24px;">
+      <!-- Titles -->
+      <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 14px;">Title Options — ranked by CTR potential</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
         <% if (youtubeOptions.titles && youtubeOptions.titles.length > 0) { %>
           <% youtubeOptions.titles.forEach((item, i) => { %>
-            <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-red-400 flex items-start justify-between gap-4">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="inline-block w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center shrink-0"><%= i + 1 %></span>
-                  <p class="font-medium text-gray-900"><%= item.title %></p>
-                </div>
-                <p class="text-xs text-gray-500 ml-8"><%= item.why %></p>
+            <div style="padding:16px;background:#fcf2eb;border-radius:8px;border-left:3px solid #ba1a1a;display:flex;align-items:flex-start;gap:14px;">
+              <span style="width:24px;height:24px;border-radius:50%;background:#ffdad6;color:#ba1a1a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Inter',sans-serif;"><%= i+1 %></span>
+              <div style="flex:1;">
+                <p style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0 0 4px;"><%= item.title %></p>
+                <p style="font-family:'Work Sans',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.why %></p>
               </div>
-              <div class="text-right shrink-0">
-                <span class="text-xs text-gray-400"><%= item.title.length %> chars</span>
-              </div>
+              <span style="font-size:11px;color:#777587;flex-shrink:0;font-family:'Inter',sans-serif;"><%= item.title.length %> chars</span>
             </div>
           <% }) %>
         <% } else { %>
-          <p class="text-sm text-gray-400">No title options generated yet.</p>
+          <p style="font-size:14px;color:#777587;font-family:'Work Sans',sans-serif;">No title options yet.</p>
         <% } %>
       </div>
-    </div>
-
-    <!-- Thumbnail Text Options -->
-    <div class="mb-4">
-      <h3 class="text-md font-semibold text-gray-700 mb-3">Thumbnail Text Options</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <!-- Thumbnails -->
+      <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 14px;">Thumbnail Text Options</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <% if (youtubeOptions.thumbnails && youtubeOptions.thumbnails.length > 0) { %>
           <% youtubeOptions.thumbnails.forEach((item, i) => { %>
-            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="inline-block w-6 h-6 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center shrink-0"><%= i + 1 %></span>
-                <p class="font-bold text-lg text-gray-900 tracking-wide"><%= item.text %></p>
+            <div style="padding:16px;background:#fcf2eb;border-radius:8px;border:1px solid #f0e6e0;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span style="width:24px;height:24px;border-radius:50%;background:#ffdad6;color:#ba1a1a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Inter',sans-serif;"><%= i+1 %></span>
+                <p style="font-family:'Inter',sans-serif;font-size:17px;font-weight:700;color:#1f1b17;margin:0;letter-spacing:-0.01em;"><%= item.text %></p>
               </div>
-              <p class="text-xs text-gray-500 ml-8"><%= item.visual %></p>
+              <p style="font-family:'Work Sans',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.visual %></p>
             </div>
           <% }) %>
         <% } else { %>
-          <p class="text-sm text-gray-400">No thumbnail options generated yet.</p>
+          <p style="font-size:14px;color:#777587;font-family:'Work Sans',sans-serif;">No thumbnail options yet.</p>
         <% } %>
       </div>
     </div>
-
-    <details class="mt-4">
-      <summary class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Edit options (JSON)</summary>
-      <form hx-post="/episodes/<%= episode.id %>/edit/youtube" hx-target="#status-youtube" hx-swap="innerHTML" class="mt-3">
-        <textarea name="content" rows="12" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm"><%= JSON.stringify(youtubeOptions, null, 2) %></textarea>
-        <button type="submit" class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700">Save Changes</button>
-      </form>
-    </details>
   </div>
 </div>
 
 <% } else { %>
-  <!-- No content generated yet -->
-  <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-    <p class="text-gray-500 mb-4">Transcript uploaded. Ready to generate content.</p>
-    <p class="text-sm text-gray-400 mb-6">Claude will create a blog post, Twitter thread, LinkedIn post, Substack draft, and YouTube options from the transcript.</p>
-    <form action="/episodes/<%= episode.id %>/generate" method="POST">
-      <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium text-lg">
-        Generate All Content
-      </button>
-    </form>
+<!-- No content yet -->
+<div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;padding:64px;text-align:center;">
+  <div style="width:56px;height:56px;border-radius:16px;background:#e2dfff;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+    <svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
   </div>
+  <h2 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:600;color:#1f1b17;margin:0 0 8px;">Ready to generate content</h2>
+  <p style="font-family:'Work Sans',sans-serif;font-size:15px;color:#777587;margin:0 0 28px;max-width:420px;margin-left:auto;margin-right:auto;">Claude will create a blog post, Twitter thread, LinkedIn post, Substack draft, and YouTube options from the transcript. Takes 30–60 seconds.</p>
+  <form action="/episodes/<%= episode.id %>/generate" method="POST">
+    <button type="submit" onclick="showLoading()" style="display:inline-flex;align-items:center;gap:8px;background:#4f46e5;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Generate All Content
+    </button>
+  </form>
+</div>
 <% } %>
 
 <script>
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
 }
 
-function copyToClipboard() {
-  const content = document.querySelector('#panel-substack .bg-gray-50').textContent;
-  navigator.clipboard.writeText(content).then(() => {
-    alert('Copied to clipboard!');
-  });
+function showLoading() {
+  document.getElementById('loading-overlay').style.display = 'flex';
 }
+
+function copySubstack() {
+  const content = document.getElementById('substack-content')?.textContent || '';
+  navigator.clipboard.writeText(content).then(() => alert('Copied to clipboard!'));
+}
+
+function serializeTweets(e) {
+  const tweets = Array.from(document.querySelectorAll('.tweet-textarea')).map(ta => ta.value);
+  document.getElementById('twitter-json-content').value = JSON.stringify(tweets);
+}
+
+// Live character counts for tweet textareas
+document.querySelectorAll('.tweet-textarea').forEach((ta, i) => {
+  const countEl = ta.parentElement.querySelector('.tweet-count');
+  const update = () => {
+    const len = ta.value.length;
+    countEl.textContent = `${len}/280`;
+    countEl.style.color = len > 280 ? '#ba1a1a' : '#777587';
+  };
+  ta.addEventListener('input', update);
+  update();
+});
 </script>
 
 <%- include('partials/foot') %>

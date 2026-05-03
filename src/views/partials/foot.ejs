@@ -1,3 +1,17 @@
   </main>
+</div>
+
+<script>
+  // Set active nav item
+  const path = window.location.pathname;
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    const nav = el.dataset.nav;
+    if (nav === 'prompts' && path.startsWith('/settings')) {
+      el.classList.add('active');
+    } else if (nav === 'episodes' && !path.startsWith('/settings')) {
+      el.classList.add('active');
+    }
+  });
+</script>
 </body>
 </html>

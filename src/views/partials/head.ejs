@@ -4,25 +4,137 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %> - SWAI Copywriter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Work+Sans:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            ui: ['Inter', 'sans-serif'],
+            content: ['Work Sans', 'sans-serif'],
+            mono: ['Space Grotesk', 'monospace'],
+          },
+          colors: {
+            surface: {
+              DEFAULT: '#ffffff',
+              dim: '#e2d8d2',
+              low: '#fcf2eb',
+              mid: '#f6ece6',
+              high: '#f0e6e0',
+              highest: '#eae1da',
+            },
+            ink: {
+              DEFAULT: '#1f1b17',
+              muted: '#464555',
+            },
+            border: {
+              DEFAULT: '#c7c4d8',
+              strong: '#777587',
+            },
+            primary: {
+              DEFAULT: '#4f46e5',
+              dark: '#3525cd',
+              light: '#e2dfff',
+            },
+            warm: '#fff8f5',
+          },
+        }
+      }
+    }
+  </script>
   <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-content { font-family: 'Work Sans', sans-serif; }
+    .font-mono-custom { font-family: 'Space Grotesk', monospace; }
+
     .htmx-indicator { display: none; }
     .htmx-request .htmx-indicator { display: inline-block; }
     .htmx-request.htmx-indicator { display: inline-block; }
+
+    .tab-btn { border-bottom: 2px solid transparent; }
     .tab-btn.active { border-color: #4f46e5; color: #4f46e5; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+
+    .nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #464555; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .nav-link:hover { background: #f0e6e0; color: #1f1b17; }
+    .nav-link.active { background: #e2dfff; color: #3525cd; }
+
+    input[type="text"], input[type="date"], input[type="file"], textarea, select {
+      font-family: 'Work Sans', sans-serif;
+    }
+    textarea.prompt-input { font-family: 'Space Grotesk', monospace; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,248,245,0.92); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e2dfff; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+    input:focus, textarea:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); outline: none; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
-  <nav class="bg-white border-b border-gray-200 px-6 py-4">
-    <div class="max-w-5xl mx-auto flex items-center justify-between">
-      <a href="/" class="text-xl font-bold text-indigo-600">SWAI Copywriter</a>
-      <div class="flex items-center gap-6">
-        <span class="text-sm text-gray-500">Podcast &rarr; Content &rarr; Publish</span>
-        <a href="/settings/prompts" class="text-sm text-gray-500 hover:text-indigo-600">Prompts</a>
+<body style="background:#fff8f5; color:#1f1b17;" class="min-h-screen">
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside style="width:280px; background:#ffffff; border-right:1px solid #c7c4d8; flex-shrink:0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto;">
+    <!-- Logo -->
+    <div style="padding:24px 20px 16px;">
+      <a href="/" style="text-decoration:none;">
+        <div style="font-family:'Inter',sans-serif; font-weight:700; font-size:17px; color:#1f1b17; letter-spacing:-0.01em;">SWAI Copywriter</div>
+        <div style="font-size:12px; color:#777587; margin-top:2px; font-family:'Work Sans',sans-serif;">Shipping with AI Podcast</div>
+      </a>
+    </div>
+
+    <div style="height:1px; background:#c7c4d8; margin:0 20px;"></div>
+
+    <!-- Nav -->
+    <nav style="padding:16px 12px; flex:1;">
+      <div style="font-size:11px; font-weight:600; color:#777587; letter-spacing:0.08em; text-transform:uppercase; padding:0 12px; margin-bottom:8px;">Workspace</div>
+      <a href="/" class="nav-link" data-nav="episodes">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Episodes
+      </a>
+      <a href="/settings/prompts" class="nav-link" data-nav="prompts" style="margin-top:2px;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Prompts
+      </a>
+    </nav>
+
+    <!-- Social status -->
+    <% if (typeof twitterConnected !== 'undefined') { %>
+    <div style="padding:16px 20px; border-top:1px solid #c7c4d8;">
+      <div style="font-size:11px; font-weight:600; color:#777587; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;">Connections</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:13px; color:#464555; font-weight:500;">Twitter / X</span>
+          <% if (twitterConnected) { %>
+            <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#059669;background:#d1fae5;padding:2px 8px;border-radius:99px;font-weight:500;">
+              <span class="status-dot" style="background:#059669;"></span>Connected
+            </span>
+          <% } else { %>
+            <a href="/auth/twitter" style="font-size:12px;color:#4f46e5;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #c7c4d8;border-radius:6px;">Connect</a>
+          <% } %>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:13px; color:#464555; font-weight:500;">LinkedIn</span>
+          <% if (linkedinConnected) { %>
+            <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#059669;background:#d1fae5;padding:2px 8px;border-radius:99px;font-weight:500;">
+              <span class="status-dot" style="background:#059669;"></span>Connected
+            </span>
+          <% } else { %>
+            <a href="/auth/linkedin" style="font-size:12px;color:#4f46e5;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #c7c4d8;border-radius:6px;">Connect</a>
+          <% } %>
+        </div>
       </div>
     </div>
-  </nav>
-  <main class="max-w-5xl mx-auto px-6 py-8">
+    <% } %>
+  </aside>
+
+  <!-- Main content -->
+  <main style="flex:1; padding:40px 48px; overflow-y:auto; min-width:0;">
