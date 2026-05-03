@@ -36,9 +36,9 @@
               strong: '#777587',
             },
             primary: {
-              DEFAULT: '#4f46e5',
-              dark: '#3525cd',
-              light: '#e2dfff',
+              DEFAULT: '#ba4b1d',
+              dark: '#8c3213',
+              light: '#fde8d6',
             },
             warm: '#fff8f5',
           },
@@ -56,13 +56,13 @@
     .htmx-request.htmx-indicator { display: inline-block; }
 
     .tab-btn { border-bottom: 2px solid transparent; }
-    .tab-btn.active { border-color: #4f46e5; color: #4f46e5; }
+    .tab-btn.active { border-color: #ba4b1d; color: #ba4b1d; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     .nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 500; color: #464555; text-decoration: none; transition: background 0.15s, color 0.15s; }
     .nav-link:hover { background: #f0e6e0; color: #1f1b17; }
-    .nav-link.active { background: #e2dfff; color: #3525cd; }
+    .nav-link.active { background: #fde8d6; color: #8c3213; }
 
     input[type="text"], input[type="date"], input[type="file"], textarea, select {
       font-family: 'Work Sans', sans-serif;
@@ -71,11 +71,11 @@
 
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
     .loading-overlay { position: fixed; inset: 0; background: rgba(255,248,245,0.92); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #e2dfff; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #fde8d6; border-top-color: #ba4b1d; border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    :focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
-    input:focus, textarea:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79,70,229,0.12); outline: none; }
+    :focus-visible { outline: 2px solid #ba4b1d; outline-offset: 2px; }
+    input:focus, textarea:focus { border-color: #ba4b1d !important; box-shadow: 0 0 0 3px rgba(196,87,26,0.12); outline: none; }
   </style>
 </head>
 <body style="background:#fff8f5; color:#1f1b17;" class="min-h-screen">
@@ -118,7 +118,7 @@
               <span class="status-dot" style="background:#059669;"></span>Connected
             </span>
           <% } else { %>
-            <a href="/auth/twitter" style="font-size:12px;color:#4f46e5;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #c7c4d8;border-radius:6px;">Connect</a>
+            <a href="/auth/twitter" style="font-size:12px;color:#ba4b1d;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #ba4b1d;border-radius:6px;">Connect</a>
           <% } %>
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -128,7 +128,7 @@
               <span class="status-dot" style="background:#059669;"></span>Connected
             </span>
           <% } else { %>
-            <a href="/auth/linkedin" style="font-size:12px;color:#4f46e5;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #c7c4d8;border-radius:6px;">Connect</a>
+            <a href="/auth/linkedin" style="font-size:12px;color:#ba4b1d;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #ba4b1d;border-radius:6px;">Connect</a>
           <% } %>
         </div>
       </div>

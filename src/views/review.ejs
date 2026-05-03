@@ -9,7 +9,7 @@
 
 <!-- Back -->
 <div style="margin-bottom:24px;">
-  <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#4f46e5'" onmouseout="this.style.color='#777587'">
+  <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     All episodes
   </a>
@@ -27,7 +27,7 @@
   <div style="display:flex;gap:10px;flex-shrink:0;">
     <% if (!episode.blog_post) { %>
       <form action="/episodes/<%= episode.id %>/generate" method="POST" id="generate-form">
-        <button type="submit" onclick="showLoading()" style="display:flex;align-items:center;gap:8px;background:#4f46e5;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        <button type="submit" onclick="showLoading()" style="display:flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           Generate All Content
         </button>
@@ -68,7 +68,7 @@
   <% statuses.forEach(s => { %>
     <%
       let c, bg, dot;
-      if (s.published) { c='#3525cd'; bg='#e2dfff'; dot='#4f46e5'; }
+      if (s.published) { c='#8c3213'; bg='#fde8d6'; dot='#ba4b1d'; }
       else if (s.approved) { c='#065f46'; bg='#d1fae5'; dot='#059669'; }
       else { c='#777587'; bg='#f0e6e0'; dot='#c7c4d8'; }
     %>
@@ -102,9 +102,9 @@
             : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/blog" method="POST" class="inline">
-          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/blog" hx-target="#status-blog" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/blog" hx-target="#status-blog" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
@@ -116,7 +116,7 @@
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/blog" hx-target="#status-blog" hx-swap="innerHTML">
           <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.blog_post %></textarea>
-          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+          <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
     </div>
@@ -133,7 +133,7 @@
           <span style="font-size:12px;color:#ba1a1a;font-weight:500;">Not connected</span>
         <% } %>
         <% if (episode.twitter_published) { %>
-          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#3525cd;background:#e2dfff;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></span>Published</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Published</span>
         <% } %>
         <span id="status-twitter">
           <%- episode.twitter_approved
@@ -141,9 +141,9 @@
             : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/twitter" method="POST" class="inline">
-          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/twitter" hx-target="#status-twitter" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/twitter" hx-target="#status-twitter" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
@@ -152,7 +152,7 @@
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <% twitterThread.forEach((tweet, i) => { %>
-            <div style="padding:14px 16px;background:#fcf2eb;border-radius:8px;border-left:3px solid #4f46e5;">
+            <div style="padding:14px 16px;background:#fcf2eb;border-radius:8px;border-left:3px solid #ba4b1d;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <span style="font-size:11px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;"><%= i+1 %>/<%= twitterThread.length %></span>
                 <span style="font-size:11px;color:<%= tweet.length > 260 ? '#ba1a1a' : '#777587' %>;font-family:'Inter',sans-serif;"><%= tweet.length %>/280</span>
@@ -176,7 +176,7 @@
               </div>
             <% }) %>
           </div>
-          <button type="submit" style="margin-top:12px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Thread</button>
+          <button type="submit" style="margin-top:12px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Thread</button>
         </form>
       </div>
     </div>
@@ -193,7 +193,7 @@
           <span style="font-size:12px;color:#ba1a1a;font-weight:500;">Not connected</span>
         <% } %>
         <% if (episode.linkedin_published) { %>
-          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#3525cd;background:#e2dfff;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#4f46e5;flex-shrink:0;"></span>Published</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Published</span>
         <% } %>
         <span id="status-linkedin">
           <%- episode.linkedin_approved
@@ -201,9 +201,9 @@
             : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/linkedin" method="POST" class="inline">
-          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
@@ -216,7 +216,7 @@
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML">
           <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.linkedin_post %></textarea>
-          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+          <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
     </div>
@@ -234,7 +234,7 @@
             ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>'
             : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
-        <button hx-post="/episodes/<%= episode.id %>/approve/substack" hx-target="#status-substack" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/substack" hx-target="#status-substack" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
@@ -257,7 +257,7 @@
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/substack" hx-target="#status-substack" hx-swap="innerHTML">
           <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.substack_draft %></textarea>
-          <button type="submit" style="margin-top:10px;background:#4f46e5;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+          <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
     </div>
@@ -276,9 +276,9 @@
             : '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>' %>
         </span>
         <form action="/episodes/<%= episode.id %>/regenerate/youtube" method="POST" class="inline">
-          <button type="submit" style="font-size:13px;color:#4f46e5;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
+          <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;padding:0;font-family:'Inter',sans-serif;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Regenerate</button>
         </form>
-        <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" style="background:#4f46e5;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
+        <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
     <div style="padding:24px;">
@@ -324,13 +324,13 @@
 <% } else { %>
 <!-- No content yet -->
 <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;padding:64px;text-align:center;">
-  <div style="width:56px;height:56px;border-radius:16px;background:#e2dfff;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-    <svg width="28" height="28" fill="none" stroke="#4f46e5" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+  <div style="width:56px;height:56px;border-radius:16px;background:#fde8d6;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+    <svg width="28" height="28" fill="none" stroke="#ba4b1d" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
   </div>
   <h2 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:600;color:#1f1b17;margin:0 0 8px;">Ready to generate content</h2>
   <p style="font-family:'Work Sans',sans-serif;font-size:15px;color:#777587;margin:0 0 28px;max-width:420px;margin-left:auto;margin-right:auto;">Claude will create a blog post, Twitter thread, LinkedIn post, Substack draft, and YouTube options from the transcript. Takes 30–60 seconds.</p>
   <form action="/episodes/<%= episode.id %>/generate" method="POST">
-    <button type="submit" onclick="showLoading()" style="display:inline-flex;align-items:center;gap:8px;background:#4f46e5;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">
+    <button type="submit" onclick="showLoading()" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       Generate All Content
     </button>
