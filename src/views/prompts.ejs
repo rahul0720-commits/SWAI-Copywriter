@@ -1,8 +1,8 @@
 <%- include('partials/head', { title: 'Prompts' }) %>
 
 <div style="margin-bottom:32px;">
-  <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 6px;">Prompt Editor</h1>
-  <p style="font-family:'Work Sans',sans-serif;font-size:15px;color:#777587;margin:0;">Edit the AI prompts Claude uses to generate content. Changes take effect immediately for new generations.</p>
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 6px;">Prompt Editor</h1>
+  <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">Edit the AI prompts Claude uses to generate content. Changes take effect immediately for new generations.</p>
 </div>
 
 <% if (saved) { %>
@@ -61,7 +61,7 @@
         <!-- Instructions panel -->
         <div style="padding:24px;border-right:1px solid #f0e6e0;background:#fcf2eb;">
           <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Tips</p>
-          <ul style="font-family:'Work Sans',sans-serif;font-size:13px;color:#464555;line-height:1.7;margin:0;padding-left:16px;">
+          <ul style="font-family:'Inter',sans-serif;font-size:13px;color:#464555;line-height:1.7;margin:0;padding-left:16px;">
             <li style="margin-bottom:8px;">Be specific about tone, length, and format.</li>
             <li style="margin-bottom:8px;">Use <code style="font-family:'Space Grotesk',monospace;background:#f0e6e0;padding:1px 5px;border-radius:3px;font-size:12px;">{{transcript}}</code> to reference the transcript text.</li>
             <li style="margin-bottom:8px;">Mention the podcast name to ground the content.</li>

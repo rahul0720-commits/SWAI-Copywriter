@@ -4,3 +4,4 @@ data/
 uploads/
 *.db
 .env.*
+.gstack/

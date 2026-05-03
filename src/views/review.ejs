@@ -4,7 +4,7 @@
 <div id="loading-overlay" class="loading-overlay" style="display:none;">
   <div class="spinner"></div>
   <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">Generating content…</p>
-  <p style="font-family:'Work Sans',sans-serif;font-size:14px;color:#777587;margin:0;">Claude is writing your blog post, tweets, LinkedIn post, and more. This takes 30–60 seconds.</p>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">Claude is writing your blog post, tweets, LinkedIn post, and more. This takes 30–60 seconds.</p>
 </div>
 
 <!-- Back -->
@@ -18,8 +18,8 @@
 <!-- Episode header -->
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;">
   <div>
-    <h1 style="font-family:'Inter',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
-    <p style="font-family:'Work Sans',sans-serif;font-size:14px;color:#777587;margin:0;">
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
+    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">
       <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
       <%= new Date(episode.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
     </p>
@@ -110,12 +110,12 @@
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
-        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;padding-right:8px;"><%= episode.blog_post %></div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;padding-right:8px;"><%= episode.blog_post %></div>
       </div>
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/blog" hx-target="#status-blog" hx-swap="innerHTML">
-          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.blog_post %></textarea>
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.blog_post %></textarea>
           <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
@@ -157,7 +157,7 @@
                 <span style="font-size:11px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;"><%= i+1 %>/<%= twitterThread.length %></span>
                 <span style="font-size:11px;color:<%= tweet.length > 260 ? '#ba1a1a' : '#777587' %>;font-family:'Inter',sans-serif;"><%= tweet.length %>/280</span>
               </div>
-              <p style="font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;margin:0;white-space:pre-wrap;"><%= tweet %></p>
+              <p style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;margin:0;white-space:pre-wrap;"><%= tweet %></p>
             </div>
           <% }) %>
         </div>
@@ -171,7 +171,7 @@
             <% twitterThread.forEach((tweet, i) => { %>
               <div style="position:relative;">
                 <div style="position:absolute;top:10px;left:12px;font-size:11px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;z-index:1;"><%= i+1 %></div>
-                <textarea class="tweet-textarea" rows="4" style="width:100%;padding:10px 12px 10px 28px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.5;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= tweet %></textarea>
+                <textarea class="tweet-textarea" rows="4" style="width:100%;padding:10px 12px 10px 28px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= tweet %></textarea>
                 <div class="tweet-count" style="font-size:11px;color:#777587;text-align:right;font-family:'Inter',sans-serif;margin-top:2px;"></div>
               </div>
             <% }) %>
@@ -209,13 +209,13 @@
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
-        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;"><%= episode.linkedin_post %></div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;"><%= episode.linkedin_post %></div>
         <p style="font-size:12px;color:#777587;margin:8px 0 0;font-family:'Inter',sans-serif;"><%= (episode.linkedin_post || '').length %> characters</p>
       </div>
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML">
-          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.linkedin_post %></textarea>
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.linkedin_post %></textarea>
           <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
@@ -240,7 +240,7 @@
     <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Preview</p>
-        <div style="font-family:'Work Sans',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;" id="substack-content"><%= episode.substack_draft %></div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;max-height:500px;overflow-y:auto;" id="substack-content"><%= episode.substack_draft %></div>
         <div style="display:flex;gap:10px;margin-top:16px;">
           <button onclick="copySubstack()" style="display:flex;align-items:center;gap:7px;background:#a44100;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
@@ -256,7 +256,7 @@
       <div>
         <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0 0 12px;">Edit</p>
         <form hx-post="/episodes/<%= episode.id %>/edit/substack" hx-target="#status-substack" hx-swap="innerHTML">
-          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Work Sans',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.substack_draft %></textarea>
+          <textarea name="content" rows="20" style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= episode.substack_draft %></textarea>
           <button type="submit" style="margin-top:10px;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
         </form>
       </div>
@@ -291,13 +291,13 @@
               <span style="width:24px;height:24px;border-radius:50%;background:#ffdad6;color:#ba1a1a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Inter',sans-serif;"><%= i+1 %></span>
               <div style="flex:1;">
                 <p style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0 0 4px;"><%= item.title %></p>
-                <p style="font-family:'Work Sans',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.why %></p>
+                <p style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.why %></p>
               </div>
               <span style="font-size:11px;color:#777587;flex-shrink:0;font-family:'Inter',sans-serif;"><%= item.title.length %> chars</span>
             </div>
           <% }) %>
         <% } else { %>
-          <p style="font-size:14px;color:#777587;font-family:'Work Sans',sans-serif;">No title options yet.</p>
+          <p style="font-size:14px;color:#777587;font-family:'Inter',sans-serif;">No title options yet.</p>
         <% } %>
       </div>
       <!-- Thumbnails -->
@@ -310,11 +310,11 @@
                 <span style="width:24px;height:24px;border-radius:50%;background:#ffdad6;color:#ba1a1a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Inter',sans-serif;"><%= i+1 %></span>
                 <p style="font-family:'Inter',sans-serif;font-size:17px;font-weight:700;color:#1f1b17;margin:0;letter-spacing:-0.01em;"><%= item.text %></p>
               </div>
-              <p style="font-family:'Work Sans',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.visual %></p>
+              <p style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;margin:0;"><%= item.visual %></p>
             </div>
           <% }) %>
         <% } else { %>
-          <p style="font-size:14px;color:#777587;font-family:'Work Sans',sans-serif;">No thumbnail options yet.</p>
+          <p style="font-size:14px;color:#777587;font-family:'Inter',sans-serif;">No thumbnail options yet.</p>
         <% } %>
       </div>
     </div>
@@ -327,8 +327,8 @@
   <div style="width:56px;height:56px;border-radius:16px;background:#fde8d6;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
     <svg width="28" height="28" fill="none" stroke="#ba4b1d" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
   </div>
-  <h2 style="font-family:'Inter',sans-serif;font-size:18px;font-weight:600;color:#1f1b17;margin:0 0 8px;">Ready to generate content</h2>
-  <p style="font-family:'Work Sans',sans-serif;font-size:15px;color:#777587;margin:0 0 28px;max-width:420px;margin-left:auto;margin-right:auto;">Claude will create a blog post, Twitter thread, LinkedIn post, Substack draft, and YouTube options from the transcript. Takes 30–60 seconds.</p>
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;color:#1f1b17;margin:0 0 8px;">Ready to generate content</h2>
+  <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 28px;max-width:420px;margin-left:auto;margin-right:auto;">Claude will create a blog post, Twitter thread, LinkedIn post, Substack draft, and YouTube options from the transcript. Takes 30–60 seconds.</p>
   <form action="/episodes/<%= episode.id %>/generate" method="POST">
     <button type="submit" onclick="showLoading()" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">
       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
