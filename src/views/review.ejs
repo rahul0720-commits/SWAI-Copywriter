@@ -26,7 +26,7 @@
   </div>
   <div style="display:flex;gap:10px;flex-shrink:0;">
     <% if (!episode.rahul_x) { %>
-      <form action="/episodes/<%= episode.id %>/generate" method="POST" id="generate-form">
+      <form action="/episodes/<%= episode.id %>/generate" method="POST">
         <input type="hidden" name="host_name" id="generate-host-name" value="Rahul">
         <button type="submit" onclick="document.getElementById('generate-host-name').value = localStorage.getItem('swai_host') || 'Rahul'; showLoading();" style="display:flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -49,31 +49,31 @@
   <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;margin-right:8px;">Content status</span>
   <%
     const statuses = [
-      { label: "Rahul X",    approved: episode.rahul_x_approved },
-      { label: "Gautham X",  approved: episode.gautham_x_approved },
-      { label: "Brand X",    approved: episode.brand_x_approved },
-      { label: "X Article",  approved: episode.x_article_approved },
-      { label: "LinkedIn",   approved: episode.linkedin_approved },
-      { label: "YouTube",    approved: episode.youtube_approved },
+      { label: 'Rahul X',   approved: episode.rahul_x_approved },
+      { label: 'Gautham X', approved: episode.gautham_x_approved },
+      { label: 'Brand X',   approved: episode.brand_x_approved },
+      { label: 'X Article', approved: episode.x_article_approved },
+      { label: 'LinkedIn',  approved: episode.linkedin_approved },
+      { label: 'YouTube',   approved: episode.youtube_approved },
     ];
   %>
-  <% statuses.forEach(s => { %>
-    <% const c = s.approved ? '#065f46' : '#777587', bg = s.approved ? '#d1fae5' : '#f0e6e0', dot = s.approved ? '#059669' : '#c7c4d8'; %>
+  <% statuses.forEach(function(s) { %>
+    <% var c = s.approved ? '#065f46' : '#777587', bg = s.approved ? '#d1fae5' : '#f0e6e0', dot = s.approved ? '#059669' : '#c7c4d8'; %>
     <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:<%= c %>;background:<%= bg %>;padding:4px 10px;border-radius:99px;">
       <span style="width:7px;height:7px;border-radius:50%;background:<%= dot %>;flex-shrink:0;"></span>
       <%= s.label %>
     </span>
-  <% }) %>
+  <% }); %>
 </div>
 
 <!-- Tabs -->
-<div style="border-bottom:1px solid #c7c4d8;margin-bottom:24px;display:flex;gap:4px;" id="tab-bar">
-  <button onclick="switchTab('rahul-x')" class="tab-btn" id="tab-rahul-x" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">Rahul X</button>
+<div style="border-bottom:1px solid #c7c4d8;margin-bottom:24px;display:flex;gap:4px;">
+  <button onclick="switchTab('rahul-x')"   class="tab-btn" id="tab-rahul-x"   style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">Rahul X</button>
   <button onclick="switchTab('gautham-x')" class="tab-btn" id="tab-gautham-x" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">Gautham X</button>
-  <button onclick="switchTab('brand-x')" class="tab-btn" id="tab-brand-x" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">Brand X</button>
+  <button onclick="switchTab('brand-x')"   class="tab-btn" id="tab-brand-x"   style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">Brand X</button>
   <button onclick="switchTab('x-article')" class="tab-btn" id="tab-x-article" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">X Article</button>
-  <button onclick="switchTab('linkedin')" class="tab-btn" id="tab-linkedin" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">LinkedIn</button>
-  <button onclick="switchTab('youtube')" class="tab-btn" id="tab-youtube" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">YouTube</button>
+  <button onclick="switchTab('linkedin')"  class="tab-btn" id="tab-linkedin"  style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">LinkedIn</button>
+  <button onclick="switchTab('youtube')"   class="tab-btn" id="tab-youtube"   style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;">YouTube</button>
 </div>
 
 <!-- ── Rahul X ── -->
@@ -81,15 +81,15 @@
   <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">Rahul's Personal X</h2>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span id="status-rahul-x"><%- episode.rahul_x_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="status-rahul-x"><% if (episode.rahul_x_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/rahul-x" method="POST" style="display:inline;">
           <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
         </form>
         <button hx-post="/episodes/<%= episode.id %>/approve/rahul-x" hx-target="#status-rahul-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'rahul-x', episode.rahul_x) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'rahul-x', content: episode.rahul_x || '' }) %>
   </div>
 </div>
 
@@ -98,8 +98,8 @@
   <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">Gautham's Personal X</h2>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span id="status-gautham-x"><%- episode.gautham_x_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="status-gautham-x"><% if (episode.gautham_x_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/gautham-x" method="POST" style="display:inline-flex;align-items:center;gap:8px;">
           <select name="mode" style="padding:5px 8px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:#464555;background:#fff;cursor:pointer;">
             <option value="full">Full</option>
@@ -110,7 +110,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/gautham-x" hx-target="#status-gautham-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'gautham-x', episode.gautham_x) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'gautham-x', content: episode.gautham_x || '' }) %>
   </div>
 </div>
 
@@ -120,14 +120,14 @@
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">@shippingwithai Brand X</h2>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span id="status-brand-x"><%- episode.brand_x_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+        <span id="status-brand-x"><% if (episode.brand_x_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/brand-x" method="POST" style="display:inline;">
           <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
         </form>
         <button hx-post="/episodes/<%= episode.id %>/approve/brand-x" hx-target="#status-brand-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'brand-x', episode.brand_x) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'brand-x', content: episode.brand_x || '' }) %>
   </div>
 </div>
 
@@ -137,7 +137,7 @@
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">X Article</h2>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span id="status-x-article"><%- episode.x_article_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+        <span id="status-x-article"><% if (episode.x_article_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/x-article" method="POST" style="display:inline;">
           <input type="hidden" name="host_name" class="host-name-field" value="Rahul">
           <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
@@ -145,7 +145,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/x-article" hx-target="#status-x-article" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'x-article', episode.x_article) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'x-article', content: episode.x_article || '' }) %>
   </div>
 </div>
 
@@ -155,7 +155,7 @@
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">LinkedIn Post</h2>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span id="status-linkedin"><%- episode.linkedin_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+        <span id="status-linkedin"><% if (episode.linkedin_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/linkedin" method="POST" style="display:inline;">
           <input type="hidden" name="host_name" class="host-name-field" value="Rahul">
           <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
@@ -163,7 +163,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'linkedin', episode.linkedin_post) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'linkedin', content: episode.linkedin_post || '' }) %>
   </div>
 </div>
 
@@ -173,14 +173,14 @@
     <div style="padding:20px 24px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <h2 style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;margin:0;">YouTube Titles &amp; Thumbnails</h2>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span id="status-youtube"><%- episode.youtube_approved ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>` : `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>` %></span>
+        <span id="status-youtube"><% if (episode.youtube_approved) { %><%- approvedBadge %><% } else { %><%- draftBadge %><% } %></span>
         <form action="/episodes/<%= episode.id %>/regenerate/youtube" method="POST" style="display:inline;">
           <button type="submit" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
         </form>
         <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- outputPanel(episode.id, 'youtube', episode.youtube) %>
+    <%- include('partials/output-panel', { epId: episode.id, platform: 'youtube', content: episode.youtube || '' }) %>
   </div>
 </div>
 
@@ -203,43 +203,11 @@
 <% } %>
 
 <script>
-// Helper: render a preview+edit panel (called via <%- outputPanel(...) %>)
-</script>
-
-<%
-function outputPanel(epId, platform, content) {
-  const safe = (content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const safeRaw = (content || '').replace(/`/g, '&#96;');
-  return `
-    <div style="display:grid;grid-template-columns:1fr 1fr;min-height:420px;">
-      <div style="padding:24px;border-right:1px solid #f0e6e0;display:flex;flex-direction:column;gap:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Preview</p>
-          <button onclick="copyContent('${platform}')" style="display:inline-flex;align-items:center;gap:6px;background:#f0e6e0;color:#8c3213;border:none;padding:5px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            Copy
-          </button>
-        </div>
-        <div id="preview-${platform}" style="font-family:'Space Grotesk',monospace;font-size:13px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;overflow-y:auto;max-height:520px;flex:1;">${safe}</div>
-      </div>
-      <div style="padding:24px;display:flex;flex-direction:column;gap:12px;">
-        <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Edit</p>
-        <form hx-post="/episodes/${epId}/edit/${platform}" hx-target="#status-${platform}" hx-swap="innerHTML" style="flex:1;display:flex;flex-direction:column;gap:10px;">
-          <textarea name="content" rows="22" style="flex:1;width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Space Grotesk',monospace;font-size:13px;line-height:1.7;color:#1f1b17;resize:vertical;box-sizing:border-box;">${safe}</textarea>
-          <button type="submit" style="align-self:flex-end;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
-        </form>
-      </div>
-    </div>
-  `;
-}
-%>
-
-<script>
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  const btn = document.getElementById('tab-' + tab);
-  const panel = document.getElementById('panel-' + tab);
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  var btn = document.getElementById('tab-' + tab);
+  var panel = document.getElementById('panel-' + tab);
   if (btn) btn.classList.add('active');
   if (panel) panel.classList.add('active');
 }
@@ -249,42 +217,36 @@ function showLoading() {
 }
 
 function copyContent(platform) {
-  const el = document.getElementById('preview-' + platform);
+  var el = document.getElementById('preview-' + platform);
   if (!el) return;
-  navigator.clipboard.writeText(el.textContent).then(() => {
-    const btn = el.closest('[style]').querySelector('button');
-    if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = orig, 1500); }
+  navigator.clipboard.writeText(el.textContent).then(function() {
+    var btns = el.parentElement.querySelectorAll('button');
+    var btn = btns[0];
+    if (btn) { var orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = orig; }, 1500); }
   });
 }
 
 function updateHostTabs(host) {
-  const isRahul = host === 'Rahul';
-  const rahulTab   = document.getElementById('tab-rahul-x');
-  const gauthamTab = document.getElementById('tab-gautham-x');
+  var isRahul = host === 'Rahul';
+  var rahulTab   = document.getElementById('tab-rahul-x');
+  var gauthamTab = document.getElementById('tab-gautham-x');
   if (!rahulTab) return;
-
   rahulTab.style.display   = isRahul ? '' : 'none';
   gauthamTab.style.display = isRahul ? 'none' : '';
-
-  // If currently active tab is being hidden, switch to the other
-  const active = document.querySelector('.tab-btn.active');
+  var active = document.querySelector('.tab-btn.active');
   if (active && active.style.display === 'none') {
     switchTab(isRahul ? 'rahul-x' : 'gautham-x');
   }
 }
 
-// Populate host_name fields from localStorage
-document.querySelectorAll('.host-name-field').forEach(el => {
+document.querySelectorAll('.host-name-field').forEach(function(el) {
   el.value = localStorage.getItem('swai_host') || 'Rahul';
 });
 
-// Init tabs based on host setting
 (function() {
-  const host = localStorage.getItem('swai_host') || 'Rahul';
+  var host = localStorage.getItem('swai_host') || 'Rahul';
   updateHostTabs(host);
-  // Set first visible tab active
-  const firstVisible = host === 'Rahul' ? 'rahul-x' : 'gautham-x';
-  switchTab(firstVisible);
+  switchTab(host === 'Rahul' ? 'rahul-x' : 'gautham-x');
 })();
 </script>
 

@@ -1,0 +1,21 @@
+<div style="display:grid;grid-template-columns:1fr 1fr;min-height:420px;">
+  <!-- Preview -->
+  <div style="padding:24px;border-right:1px solid #f0e6e0;display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Preview</p>
+      <button onclick="copyContent('<%= platform %>')" style="display:inline-flex;align-items:center;gap:6px;background:#f0e6e0;color:#8c3213;border:none;padding:5px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+    <div id="preview-<%= platform %>" style="font-family:'Space Grotesk',monospace;font-size:13px;line-height:1.7;color:#1f1b17;white-space:pre-wrap;overflow-y:auto;max-height:520px;flex:1;"><%= content %></div>
+  </div>
+  <!-- Edit -->
+  <div style="padding:24px;display:flex;flex-direction:column;gap:12px;">
+    <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Edit</p>
+    <form hx-post="/episodes/<%= epId %>/edit/<%= platform %>" hx-target="#status-<%= platform %>" hx-swap="innerHTML" style="flex:1;display:flex;flex-direction:column;gap:10px;">
+      <textarea name="content" rows="22" style="flex:1;width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Space Grotesk',monospace;font-size:13px;line-height:1.7;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= content %></textarea>
+      <button type="submit" style="align-self:flex-end;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
+    </form>
+  </div>
+</div>

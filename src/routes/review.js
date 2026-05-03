@@ -5,8 +5,9 @@ import { isConnected as linkedinConnected } from '../services/linkedin.js';
 
 const router = Router();
 
-const APPROVED_BADGE = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>`;
-const SAVED_BADGE    = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Saved — re-approve</span>`;
+const APPROVED_BADGE = '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>';
+const DRAFT_BADGE    = '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>';
+const SAVED_BADGE    = '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Saved \u2014 re-approve</span>';
 
 const COLUMN_MAP = {
   'rahul-x':   { col: 'rahul_x',      approved: 'rahul_x_approved' },
@@ -26,6 +27,8 @@ router.get('/:id/review', (req, res) => {
     episode,
     twitterConnected: twitterConnected(),
     linkedinConnected: linkedinConnected(),
+    approvedBadge: APPROVED_BADGE,
+    draftBadge: DRAFT_BADGE,
   });
 });
 
