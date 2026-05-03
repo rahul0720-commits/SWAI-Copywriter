@@ -41,5 +41,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`\n  UVC Automation running at http://localhost:${config.port}\n`);
+  console.log(`\n  SWAI Copywriter running at http://localhost:${config.port}\n`);
 });

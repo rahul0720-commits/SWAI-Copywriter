@@ -11,13 +11,10 @@ const upload = multer({ dest: join(__dirname, '..', '..', 'uploads') });
 
 const router = Router();
 
-// Upload a new episode transcript
 router.post('/', upload.single('transcript'), (req, res) => {
   const { title, guest_name, recording_date } = req.body;
 
-  if (!req.file) {
-    return res.status(400).send('No transcript file uploaded');
-  }
+  if (!req.file) return res.status(400).send('No transcript file uploaded');
 
   const buffer = readFileSync(req.file.path);
   const cleanTranscript = parseTranscript(buffer, req.file.originalname);
@@ -33,7 +30,6 @@ router.post('/', upload.single('transcript'), (req, res) => {
   res.redirect(`/episodes/${result.lastInsertRowid}/review`);
 });
 
-// Delete an episode
 router.post('/:id/delete', (req, res) => {
   db.prepare('DELETE FROM episodes WHERE id = ?').run(req.params.id);
   res.redirect('/');

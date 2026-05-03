@@ -6,9 +6,6 @@ import { config } from '../config.js';
 // In-memory store for PKCE verifiers (per-session)
 const pkceStore = new Map();
 
-/**
- * Generate Twitter OAuth 2.0 authorization URL with PKCE
- */
 export function getAuthUrl() {
   const client = new TwitterApi({
     clientId: config.twitter.clientId,
@@ -17,20 +14,13 @@ export function getAuthUrl() {
 
   const { url, codeVerifier, state } = client.generateOAuth2AuthLink(
     config.twitter.callbackUrl,
-    {
-      scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-    }
+    { scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'] }
   );
 
-  // Store verifier for callback
   pkceStore.set(state, codeVerifier);
-
   return { url, state };
 }
 
-/**
- * Handle OAuth callback — exchange code for tokens
- */
 export async function handleCallback(code, state) {
   const codeVerifier = pkceStore.get(state);
   if (!codeVerifier) throw new Error('Invalid OAuth state — please try connecting again.');
@@ -49,7 +39,6 @@ export async function handleCallback(code, state) {
 
   const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 
-  // Store tokens
   db.prepare(
     `INSERT INTO oauth_tokens (platform, access_token, refresh_token, expires_at, updated_at)
      VALUES ('twitter', ?, ?, ?, datetime('now'))
@@ -63,16 +52,12 @@ export async function handleCallback(code, state) {
   return { accessToken, refreshToken, expiresAt };
 }
 
-/**
- * Get a valid Twitter client, refreshing token if needed
- */
 export async function getClient() {
   const row = db.prepare('SELECT * FROM oauth_tokens WHERE platform = ?').get('twitter');
   if (!row) throw new Error('Twitter not connected. Please authorize first.');
 
   let { access_token: accessToken, refresh_token: refreshToken, expires_at: expiresAt } = row;
 
-  // Check if token is expired (with 5 min buffer)
   if (new Date(expiresAt) < new Date(Date.now() + 5 * 60 * 1000)) {
     const client = new TwitterApi({
       clientId: config.twitter.clientId,
@@ -93,19 +78,12 @@ export async function getClient() {
   return new TwitterApi(accessToken);
 }
 
-/**
- * Post a thread (array of tweet strings)
- */
 export async function postThread(tweets) {
   const client = await getClient();
-  const result = await client.v2.tweetThread(tweets);
-  return result;
+  return client.v2.tweetThread(tweets);
 }
 
-/**
- * Check if Twitter is connected
- */
 export function isConnected() {
-  const row = db.prepare('SELECT * FROM oauth_tokens WHERE platform = ?').get('twitter');
+  const row = db.prepare('SELECT id FROM oauth_tokens WHERE platform = ?').get('twitter');
   return !!row;
 }

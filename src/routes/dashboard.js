@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
     .all();
 
   res.render('dashboard', {
-    title: 'UVC Automation',
+    title: 'SWAI Copywriter',
     episodes,
     twitterConnected: twitterConnected(),
     linkedinConnected: linkedinConnected(),

@@ -8,15 +8,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const promptsDir = join(__dirname, '..', 'prompts');
 
 const PROMPTS = [
-  { name: 'blog-post',      label: 'Blog Post',       file: 'blog-post.txt' },
-  { name: 'twitter-thread', label: 'Twitter Thread',  file: 'twitter-thread.txt' },
-  { name: 'linkedin-post',  label: 'LinkedIn Post',   file: 'linkedin-post.txt' },
-  { name: 'youtube-options',label: 'YouTube Options', file: 'youtube-options.txt' },
+  { name: 'blog-post',       label: 'Blog Post',       file: 'blog-post.txt' },
+  { name: 'twitter-thread',  label: 'Twitter Thread',  file: 'twitter-thread.txt' },
+  { name: 'linkedin-post',   label: 'LinkedIn Post',   file: 'linkedin-post.txt' },
+  { name: 'youtube-options', label: 'YouTube Options', file: 'youtube-options.txt' },
 ];
 
 const router = Router();
 
-// GET /settings/prompts
 router.get('/settings/prompts', (req, res) => {
   const prompts = PROMPTS.map((p) => {
     const defaultContent = readFileSync(join(promptsDir, p.file), 'utf-8');
@@ -37,7 +36,6 @@ router.get('/settings/prompts', (req, res) => {
   });
 });
 
-// POST /settings/prompts/:name — save custom prompt
 router.post('/settings/prompts/:name', (req, res) => {
   const { name } = req.params;
   const { content } = req.body;
@@ -53,7 +51,6 @@ router.post('/settings/prompts/:name', (req, res) => {
   res.redirect(`/settings/prompts?saved=${name}`);
 });
 
-// POST /settings/prompts/:name/reset — restore default
 router.post('/settings/prompts/:name/reset', (req, res) => {
   const { name } = req.params;
   const valid = PROMPTS.find((p) => p.name === name);

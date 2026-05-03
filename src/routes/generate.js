@@ -4,18 +4,13 @@ import { generateAllContent } from '../services/claude.js';
 
 const router = Router();
 
-// Generate content for an episode
 router.post('/:id/generate', async (req, res, next) => {
   try {
     const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);
     if (!episode) return res.status(404).send('Episode not found');
     if (!episode.transcript_clean) return res.status(400).send('No transcript available');
 
-    const metadata = {
-      title: episode.title,
-      guestName: episode.guest_name,
-    };
-
+    const metadata = { title: episode.title, guestName: episode.guest_name };
     const content = await generateAllContent(episode.transcript_clean, metadata);
 
     db.prepare(
@@ -42,7 +37,6 @@ router.post('/:id/generate', async (req, res, next) => {
   }
 });
 
-// Regenerate a single platform's content
 router.post('/:id/regenerate/:platform', async (req, res, next) => {
   try {
     const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);

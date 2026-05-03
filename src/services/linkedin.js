@@ -6,9 +6,6 @@ const LINKEDIN_TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken';
 const LINKEDIN_USERINFO_URL = 'https://api.linkedin.com/v2/userinfo';
 const LINKEDIN_POSTS_URL = 'https://api.linkedin.com/rest/posts';
 
-/**
- * Generate LinkedIn OAuth authorization URL
- */
 export function getAuthUrl() {
   const state = Math.random().toString(36).slice(2);
   const params = new URLSearchParams({
@@ -21,11 +18,7 @@ export function getAuthUrl() {
   return { url: `${LINKEDIN_AUTH_URL}?${params}`, state };
 }
 
-/**
- * Handle OAuth callback — exchange code for tokens + get member URN
- */
 export async function handleCallback(code) {
-  // Exchange code for access token
   const tokenRes = await fetch(LINKEDIN_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -47,19 +40,15 @@ export async function handleCallback(code) {
   const { access_token: accessToken, expires_in: expiresIn, refresh_token: refreshToken } = tokenData;
   const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
 
-  // Get member URN (sub field from userinfo)
   const userRes = await fetch(LINKEDIN_USERINFO_URL, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
-  if (!userRes.ok) {
-    throw new Error('Failed to get LinkedIn user info');
-  }
+  if (!userRes.ok) throw new Error('Failed to get LinkedIn user info');
 
   const userData = await userRes.json();
   const memberUrn = `urn:li:person:${userData.sub}`;
 
-  // Store tokens + member URN
   db.prepare(
     `INSERT INTO oauth_tokens (platform, access_token, refresh_token, expires_at, extra_data, updated_at)
      VALUES ('linkedin', ?, ?, ?, ?, datetime('now'))
@@ -74,23 +63,13 @@ export async function handleCallback(code) {
   return { accessToken, memberUrn };
 }
 
-/**
- * Get valid access token and member URN
- */
 export function getCredentials() {
   const row = db.prepare('SELECT * FROM oauth_tokens WHERE platform = ?').get('linkedin');
   if (!row) throw new Error('LinkedIn not connected. Please authorize first.');
-
   const extraData = JSON.parse(row.extra_data || '{}');
-  return {
-    accessToken: row.access_token,
-    memberUrn: extraData.memberUrn,
-  };
+  return { accessToken: row.access_token, memberUrn: extraData.memberUrn };
 }
 
-/**
- * Create a LinkedIn post
- */
 export async function createPost(text) {
   const { accessToken, memberUrn } = getCredentials();
 
@@ -120,15 +99,11 @@ export async function createPost(text) {
     throw new Error(`LinkedIn post failed: ${err}`);
   }
 
-  // LinkedIn returns 201 with the post ID in the header
   const postId = res.headers.get('x-restli-id');
   return { postId, status: res.status };
 }
 
-/**
- * Check if LinkedIn is connected
- */
 export function isConnected() {
-  const row = db.prepare('SELECT * FROM oauth_tokens WHERE platform = ?').get('linkedin');
+  const row = db.prepare('SELECT id FROM oauth_tokens WHERE platform = ?').get('linkedin');
   return !!row;
 }

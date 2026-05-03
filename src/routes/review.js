@@ -6,26 +6,15 @@ import { isConnected as linkedinConnected } from '../services/linkedin.js';
 
 const router = Router();
 
-// View episode review page
 router.get('/:id/review', (req, res) => {
   const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);
   if (!episode) return res.status(404).send('Episode not found');
 
-  // Parse twitter thread JSON
   let twitterThread = [];
-  try {
-    twitterThread = episode.twitter_thread ? JSON.parse(episode.twitter_thread) : [];
-  } catch {
-    twitterThread = [];
-  }
+  try { twitterThread = episode.twitter_thread ? JSON.parse(episode.twitter_thread) : []; } catch { twitterThread = []; }
 
-  // Parse YouTube options JSON
   let youtubeOptions = { titles: [], thumbnails: [] };
-  try {
-    youtubeOptions = episode.youtube_options ? JSON.parse(episode.youtube_options) : { titles: [], thumbnails: [] };
-  } catch {
-    youtubeOptions = { titles: [], thumbnails: [] };
-  }
+  try { youtubeOptions = episode.youtube_options ? JSON.parse(episode.youtube_options) : { titles: [], thumbnails: [] }; } catch { youtubeOptions = { titles: [], thumbnails: [] }; }
 
   res.render('review', {
     title: `Review: ${episode.title}`,
@@ -38,7 +27,6 @@ router.get('/:id/review', (req, res) => {
   });
 });
 
-// Approve a platform's content
 router.post('/:id/approve/:platform', (req, res) => {
   const { platform } = req.params;
   const validPlatforms = ['blog', 'twitter', 'linkedin', 'substack', 'youtube'];
@@ -48,15 +36,12 @@ router.post('/:id/approve/:platform', (req, res) => {
     req.params.id
   );
 
-  // If HTMX request, return just the updated badge
   if (req.headers['hx-request']) {
     return res.send('<span class="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Approved</span>');
   }
-
   res.redirect(`/episodes/${req.params.id}/review`);
 });
 
-// Save edited content
 router.post('/:id/edit/:platform', (req, res) => {
   const { platform } = req.params;
   const { content } = req.body;
@@ -80,7 +65,6 @@ router.post('/:id/edit/:platform', (req, res) => {
   if (req.headers['hx-request']) {
     return res.send('<span class="inline-block px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Saved (re-approve)</span>');
   }
-
   res.redirect(`/episodes/${req.params.id}/review`);
 });
 

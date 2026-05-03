@@ -9,10 +9,8 @@ mkdirSync(dbDir, { recursive: true });
 
 const db = new Database(join(dbDir, 'uvc.db'));
 
-// Enable WAL mode for better concurrent performance
 db.pragma('journal_mode = WAL');
 
-// Create tables
 db.exec(`
   CREATE TABLE IF NOT EXISTS episodes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,6 +30,8 @@ db.exec(`
     twitter_published INTEGER DEFAULT 0,
     linkedin_published INTEGER DEFAULT 0,
     substack_status TEXT DEFAULT 'draft',
+    youtube_options TEXT,
+    youtube_approved INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
@@ -56,24 +56,12 @@ db.exec(`
     published_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (episode_id) REFERENCES episodes(id)
   );
-`);
 
-// Create prompts table for editable prompts
-db.exec(`
   CREATE TABLE IF NOT EXISTS prompts (
     name TEXT PRIMARY KEY,
     content TEXT NOT NULL,
     updated_at TEXT DEFAULT (datetime('now'))
   );
 `);
-
-// Migration: Add YouTube columns if they don't exist
-const youtubeMigrations = [
-  `ALTER TABLE episodes ADD COLUMN youtube_options TEXT`,
-  `ALTER TABLE episodes ADD COLUMN youtube_approved INTEGER DEFAULT 0`,
-];
-for (const sql of youtubeMigrations) {
-  try { db.exec(sql); } catch (e) { /* Column already exists */ }
-}
 
 export default db;

@@ -5,7 +5,6 @@ import { createPost as createLinkedInPost } from '../services/linkedin.js';
 
 const router = Router();
 
-// Publish approved content to all platforms
 router.post('/:id/publish', async (req, res, next) => {
   try {
     const episode = db.prepare('SELECT * FROM episodes WHERE id = ?').get(req.params.id);
@@ -13,44 +12,33 @@ router.post('/:id/publish', async (req, res, next) => {
 
     const results = [];
 
-    // Publish to Twitter
     if (episode.twitter_approved && !episode.twitter_published) {
       try {
         const tweets = JSON.parse(episode.twitter_thread);
         const result = await postThread(tweets);
-        db.prepare('UPDATE episodes SET twitter_published = 1, updated_at = datetime(\'now\') WHERE id = ?').run(episode.id);
-        db.prepare(
-          'INSERT INTO publish_log (episode_id, platform, status, response_data) VALUES (?, ?, ?, ?)'
-        ).run(episode.id, 'twitter', 'success', JSON.stringify(result));
+        db.prepare(`UPDATE episodes SET twitter_published = 1, updated_at = datetime('now') WHERE id = ?`).run(episode.id);
+        db.prepare('INSERT INTO publish_log (episode_id, platform, status, response_data) VALUES (?, ?, ?, ?)').run(episode.id, 'twitter', 'success', JSON.stringify(result));
         results.push({ platform: 'twitter', status: 'success' });
       } catch (err) {
-        db.prepare(
-          'INSERT INTO publish_log (episode_id, platform, status, error_message) VALUES (?, ?, ?, ?)'
-        ).run(episode.id, 'twitter', 'error', err.message);
+        db.prepare('INSERT INTO publish_log (episode_id, platform, status, error_message) VALUES (?, ?, ?, ?)').run(episode.id, 'twitter', 'error', err.message);
         results.push({ platform: 'twitter', status: 'error', message: err.message });
       }
     }
 
-    // Publish to LinkedIn
     if (episode.linkedin_approved && !episode.linkedin_published) {
       try {
         const result = await createLinkedInPost(episode.linkedin_post);
-        db.prepare('UPDATE episodes SET linkedin_published = 1, updated_at = datetime(\'now\') WHERE id = ?').run(episode.id);
-        db.prepare(
-          'INSERT INTO publish_log (episode_id, platform, status, response_data) VALUES (?, ?, ?, ?)'
-        ).run(episode.id, 'linkedin', 'success', JSON.stringify(result));
+        db.prepare(`UPDATE episodes SET linkedin_published = 1, updated_at = datetime('now') WHERE id = ?`).run(episode.id);
+        db.prepare('INSERT INTO publish_log (episode_id, platform, status, response_data) VALUES (?, ?, ?, ?)').run(episode.id, 'linkedin', 'success', JSON.stringify(result));
         results.push({ platform: 'linkedin', status: 'success' });
       } catch (err) {
-        db.prepare(
-          'INSERT INTO publish_log (episode_id, platform, status, error_message) VALUES (?, ?, ?, ?)'
-        ).run(episode.id, 'linkedin', 'error', err.message);
+        db.prepare('INSERT INTO publish_log (episode_id, platform, status, error_message) VALUES (?, ?, ?, ?)').run(episode.id, 'linkedin', 'error', err.message);
         results.push({ platform: 'linkedin', status: 'error', message: err.message });
       }
     }
 
-    // Substack: mark as ready (user copies manually)
     if (episode.substack_approved && episode.substack_status === 'draft') {
-      db.prepare('UPDATE episodes SET substack_status = \'ready\', updated_at = datetime(\'now\') WHERE id = ?').run(episode.id);
+      db.prepare(`UPDATE episodes SET substack_status = 'ready', updated_at = datetime('now') WHERE id = ?`).run(episode.id);
       results.push({ platform: 'substack', status: 'ready' });
     }
 
