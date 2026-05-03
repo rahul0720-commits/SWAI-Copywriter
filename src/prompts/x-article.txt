@@ -1,2 +1,27 @@
-PLACEHOLDER — paste X Article prompt here, then save via /settings/prompts.
-Host: {{host_name}}
+You are writing a long-form X Article based on a Shipping with AI podcast episode. Published from {host_name}'s personal X account. The article must stand alone; a reader who never clicks the podcast link should still get value.
+
+INPUT: a podcast transcript.
+
+OUTPUT:
+1. Title (under 70 characters): names the transformation or outcome. No clickbait, no question titles.
+2. Dek/subtitle (one sentence): adds the angle the title implies.
+3. Article body, 800 to 1200 words.
+
+ARTICLE STRUCTURE:
+- Opening (2 to 3 short paragraphs): the specific problem the guest had. Set the stakes.
+- Section "Why he built it": the trigger. What was broken. What workaround came first.
+- Section "The workflow": step by step. Name tools. Describe screens. Concrete enough to replicate without the video.
+- Section "What changed": the business outcome. Numbers where available. What the guest now spends time on instead.
+- Closing (1 to 2 paragraphs): the takeaway {host_name} drew. One specific lesson, not a summary.
+- Final line: link to the full episode.
+
+VOICE & CONSTRAINTS:
+- {host_name}'s voice. First-person where natural, but the guest is the subject.
+- No em dashes.
+- Section headers should be blunt ("Why he built it", "The workflow", "What changed"). No headers that just preview what's coming.
+- Quote the guest sparingly: two or three direct quotes maximum, only when phrasing beats paraphrase.
+- No filler transitions ("Now, let's talk about...").
+- No corporate vocabulary or consultant framing.
+
+TRANSCRIPT:
+{transcript}

@@ -1,1 +1,52 @@
-PLACEHOLDER — paste YouTube titles + thumbnails prompt here, then save via /settings/prompts.
+You are generating YouTube metadata for a Shipping with AI podcast episode. Show format: a guest demonstrates a specific AI workflow tied to a business outcome. Episodes around 20 minutes. Audience: non-technical founders, small business owners, agency owners.
+
+INPUT: a podcast transcript.
+
+OUTPUT:
+1. FIVE title options.
+2. THREE thumbnail text options paired to each title (15 thumbnail texts total).
+
+TITLE GUIDANCE:
+- Each title signals a transformation or specific outcome.
+- Mix patterns. Do not lock to one formula. Draw from:
+  • "How [Guest] [Outcome] with [Tool]"
+  • "[Number/Time] [Outcome] using [Tool]"
+  • "The [Tool] workflow that [Outcome]"
+  • A counterintuitive claim from the episode
+  • A direct outcome: "Replace [Old Process] with [New Workflow]"
+- Under 70 characters where possible.
+- Specific enough that someone searching for the outcome would click.
+- No clickbait, no all-caps, no question titles, no "you won't believe".
+
+THUMBNAIL TEXT GUIDANCE:
+- 3 to 5 words each.
+- Must work standalone on a thumbnail with no other context.
+- Visually punchy. Short, declarative, or confrontational.
+- Pairs with the title but does not repeat it.
+- For each title, give 3 distinct angles:
+  • Angle A: the outcome (e.g., "10X MORE LEADS")
+  • Angle B: the tool or method (e.g., "PERPLEXITY HACK")
+  • Angle C: the contrast or before-state (e.g., "STOP COLD CALLING")
+- ALL CAPS unless lowercase serves the design specifically.
+
+VOICE & CONSTRAINTS:
+- No em dashes.
+- No filler ("amazing", "ultimate", "best ever").
+- Tool names spelled correctly. Guest name spelled correctly, confirmed from transcript.
+
+OUTPUT FORMAT:
+
+Title 1: [title]
+  Thumbnail A: [3-5 words]
+  Thumbnail B: [3-5 words]
+  Thumbnail C: [3-5 words]
+
+Title 2: [title]
+  Thumbnail A: ...
+  Thumbnail B: ...
+  Thumbnail C: ...
+
+(Continue for 5 titles.)
+
+TRANSCRIPT:
+{transcript}

@@ -1,2 +1,22 @@
-PLACEHOLDER — paste LinkedIn post prompt here, then save via /settings/prompts.
-Host: {{host_name}}
+You are writing a LinkedIn post from {host_name}, a co-host of the Shipping with AI podcast. LinkedIn is not the primary distribution channel, so this post must justify its presence. Personal, observational, earned.
+
+INPUT: a podcast transcript.
+
+OUTPUT: ONE LinkedIn post, 150 to 250 words.
+
+STRUCTURE:
+- Line 1: a specific observation or moment from the conversation. Not "I just recorded an episode...". Something concrete.
+- Body: one lesson {host_name} drew. Not three. Tied to a business outcome a LinkedIn reader cares about.
+- Closing: a soft pointer to the episode. Something like: "Episode is up. Worth 20 minutes if you do [specific task]." No "link in comments", no rocket emojis.
+
+VOICE & CONSTRAINTS:
+- First-person, conversational, restrained.
+- No em dashes.
+- No LinkedIn cliches ("I learned something powerful today", "game-changer", "here are 5 takeaways").
+- No bullet points unless the workflow itself is a numbered process.
+- No emojis.
+- One clear point. If three lessons appear, pick the sharpest and cut the others.
+- Anchored to a real business outcome, not "AI is changing everything".
+
+TRANSCRIPT:
+{transcript}
