@@ -48,7 +48,7 @@ function countAccepted(flags, decisions) {
 router.get('/settings/editorial', (req, res) => {
   const criteria = getShowCriteria();
   const keepList = getKeepList();
-  res.render('settings-editorial', { title: 'Editorial Criteria', criteria, keepList });
+  res.render('settings-editorial', { title: 'Content Editor', criteria, keepList });
 });
 
 router.post('/settings/editorial', (req, res) => {
