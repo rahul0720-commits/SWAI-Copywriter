@@ -106,6 +106,11 @@ db.exec(`
 4. Prioritise the guest''s strongest 3–5 insights per act.');
 `);
 
+// Add tuning columns to editorial_sessions
+for (const [col, type] of [['tuning_proposals', 'TEXT'], ['tuning_status', "TEXT DEFAULT 'none'"]]) {
+  try { db.exec(`ALTER TABLE editorial_sessions ADD COLUMN ${col} ${type}`); } catch { /* already exists */ }
+}
+
 // Add new columns to existing DBs (ALTER TABLE ignores duplicates via try/catch)
 const newCols = [
   ['rahul_x', 'TEXT'],

@@ -4,7 +4,7 @@ import multer from 'multer';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import db from '../db.js';
-import { runPass1, runPass2, generateSuggestedEditsMarkdown } from '../services/editorial.js';
+import { runPass1, runPass2, generateSuggestedEditsMarkdown, generateTuningProposals } from '../services/editorial.js';
 import { applyEditorialCuts, cleanTranscriptForCopywriter } from '../services/transcript.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -172,6 +172,8 @@ router.get('/episodes/:id/editorial', (req, res) => {
     end_secs: f.end_time ? f.end_time.split(':').reduce((a, v, i) => a + parseFloat(v) * [3600, 60, 1][i], 0) : 0,
   }));
 
+  const tuningProposals = JSON.parse(session.tuning_proposals || '{}');
+
   res.render('editorial', {
     title: `Editorial: ${episode.title}`,
     episode,
@@ -185,6 +187,8 @@ router.get('/episodes/:id/editorial', (req, res) => {
     pass1Accepted,
     pass2Accepted,
     suggestedEditsMarkdown,
+    tuningProposals,
+    tuningStatus: session.tuning_status || 'none',
   });
 });
 
@@ -354,6 +358,66 @@ router.post('/episodes/:id/editorial/send-to-copywriter', (req, res) => {
     .run(clean, req.params.id);
 
   res.redirect(`/episodes/${req.params.id}/review`);
+});
+
+// ─── POST /:id/editorial/submit-feedback ─────────────────────────────────────
+
+router.post('/episodes/:id/editorial/submit-feedback', async (req, res, next) => {
+  try {
+    const { feedback } = req.body;
+    if (!feedback?.trim()) return res.redirect(`/episodes/${req.params.id}/editorial`);
+
+    const criteria = getShowCriteria();
+    const proposals = await generateTuningProposals(feedback.trim(), criteria);
+
+    db.prepare(`UPDATE editorial_sessions SET tuning_proposals = ?, tuning_status = 'pending', updated_at = datetime('now') WHERE episode_id = ?`)
+      .run(JSON.stringify({ feedback: feedback.trim(), ...proposals }), req.params.id);
+
+    res.redirect(`/episodes/${req.params.id}/editorial`);
+  } catch (err) { next(err); }
+});
+
+// ─── POST /:id/editorial/apply-tuning ────────────────────────────────────────
+
+router.post('/episodes/:id/editorial/apply-tuning', (req, res) => {
+  const session = db.prepare('SELECT * FROM editorial_sessions WHERE episode_id = ?').get(req.params.id);
+  const proposals = JSON.parse(session?.tuning_proposals || '{}');
+
+  if (req.body.apply_pass1 && proposals.pass1_prompt) {
+    db.prepare(`INSERT INTO prompts (name, content, updated_at) VALUES ('editorial-pass1', ?, datetime('now'))
+      ON CONFLICT(name) DO UPDATE SET content = excluded.content, updated_at = excluded.updated_at`)
+      .run(proposals.pass1_prompt);
+  }
+  if (req.body.apply_pass2 && proposals.pass2_prompt) {
+    db.prepare(`INSERT INTO prompts (name, content, updated_at) VALUES ('editorial-pass2', ?, datetime('now'))
+      ON CONFLICT(name) DO UPDATE SET content = excluded.content, updated_at = excluded.updated_at`)
+      .run(proposals.pass2_prompt);
+  }
+  if (req.body.apply_criteria && proposals.show_criteria) {
+    db.prepare(`UPDATE show_criteria SET criteria_text = ?, updated_at = datetime('now') WHERE id = 1`)
+      .run(proposals.show_criteria);
+  }
+  if (proposals.keep_list_additions?.length) {
+    for (const entry of proposals.keep_list_additions) {
+      if (entry.pattern) {
+        db.prepare('INSERT INTO keep_list (pattern, reason, episode_id) VALUES (?, ?, ?)')
+          .run(entry.pattern.slice(0, 150), entry.reason || '', req.params.id);
+      }
+    }
+  }
+
+  db.prepare(`UPDATE editorial_sessions SET tuning_status = 'applied', updated_at = datetime('now') WHERE episode_id = ?`)
+    .run(req.params.id);
+
+  res.redirect(`/episodes/${req.params.id}/editorial`);
+});
+
+// ─── GET /:id/editorial/skip-tuning ──────────────────────────────────────────
+
+router.get('/episodes/:id/editorial/skip-tuning', (req, res) => {
+  db.prepare(`UPDATE editorial_sessions SET tuning_status = 'applied', updated_at = datetime('now') WHERE episode_id = ?`)
+    .run(req.params.id);
+  res.redirect(`/episodes/${req.params.id}/editorial`);
 });
 
 // ─── GET /:id/editorial/audio ────────────────────────────────────────────────

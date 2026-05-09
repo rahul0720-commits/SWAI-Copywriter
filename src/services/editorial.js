@@ -14,6 +14,12 @@ function getPrompt(name, file) {
   return row ? row.content : readFileSync(join(promptsDir, file), 'utf-8');
 }
 
+function extractObject(text) {
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try { return JSON.parse(match[0]); } catch { return null; }
+}
+
 function extractJson(text) {
   const match = text.match(/\[[\s\S]*\]/);
   if (!match) return [];
@@ -109,4 +115,61 @@ export function generateSuggestedEditsMarkdown(episode, pass1Flags, pass2Flags, 
   }
 
   return lines.join('\n');
+}
+
+export async function generateTuningProposals(feedback, showCriteria) {
+  const pass1Prompt = getPrompt('editorial-pass1', 'editorial-pass1.txt');
+  const pass2Prompt = getPrompt('editorial-pass2', 'editorial-pass2.txt');
+
+  const system = `You are an expert at improving AI prompts for podcast editorial work.
+You will be given the current prompts used for two editorial passes, the current show criteria, and feedback from a human editor about what went wrong in the latest session.
+Your job is to propose minimal, targeted improvements to fix the specific issues raised.
+
+Rules:
+- Only change what the feedback specifically calls out. Don't rewrite things that aren't broken.
+- Keep the same structure and format of each prompt.
+- For keep_list_additions, only add entries if the feedback mentions specific content Claude shouldn't have flagged.
+- Return ONLY a valid JSON object, no explanation outside it.
+
+Return this exact JSON shape:
+{
+  "pass1_prompt": "full updated prompt text, or null if no changes needed",
+  "pass2_prompt": "full updated prompt text, or null if no changes needed",
+  "show_criteria": "full updated criteria text, or null if no changes needed",
+  "keep_list_additions": [{"pattern": "short excerpt or description", "reason": "why to keep"}],
+  "summary": "one sentence: what you changed and why"
+}`;
+
+  const userMsg = `CURRENT PASS 1 PROMPT:
+${pass1Prompt}
+
+CURRENT PASS 2 PROMPT:
+${pass2Prompt}
+
+CURRENT SHOW CRITERIA:
+${showCriteria}
+
+EDITOR FEEDBACK:
+${feedback}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8192,
+    system,
+    messages: [{ role: 'user', content: userMsg }],
+  });
+
+  const proposals = extractObject(response.content[0].text);
+  if (!proposals) return null;
+
+  return {
+    pass1_prompt: proposals.pass1_prompt || null,
+    pass2_prompt: proposals.pass2_prompt || null,
+    show_criteria: proposals.show_criteria || null,
+    keep_list_additions: proposals.keep_list_additions || [],
+    summary: proposals.summary || '',
+    current_pass1: pass1Prompt,
+    current_pass2: pass2Prompt,
+    current_criteria: showCriteria,
+  };
 }
