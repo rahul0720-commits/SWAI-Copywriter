@@ -4,6 +4,14 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import db from '../db.js';
 
+function getShowCriteria() {
+  return db.prepare('SELECT criteria_text FROM show_criteria WHERE id = 1').get()?.criteria_text ?? '';
+}
+
+function getKeepList() {
+  return db.prepare('SELECT id, pattern, reason, created_at FROM keep_list ORDER BY created_at DESC').all();
+}
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const promptsDir = join(__dirname, '..', 'prompts');
 
@@ -37,6 +45,8 @@ router.get('/settings/prompts', (req, res) => {
     prompts,
     saved: req.query.saved || null,
     reset: req.query.reset || null,
+    criteria: getShowCriteria(),
+    keepList: getKeepList(),
   });
 });
 

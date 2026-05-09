@@ -46,9 +46,10 @@ function countAccepted(flags, decisions) {
 // ─── Settings router (separate instance — mounted at '/' in index.js) ─────────
 
 router.get('/settings/editorial', (req, res) => {
-  const criteria = getShowCriteria();
-  const keepList = getKeepList();
-  res.render('settings-editorial', { title: 'Content Editor', criteria, keepList });
+  const episodes = db.prepare('SELECT * FROM episodes ORDER BY created_at DESC').all();
+  const sessions = db.prepare('SELECT episode_id, status FROM editorial_sessions').all();
+  const statusMap = Object.fromEntries(sessions.map(s => [s.episode_id, s.status]));
+  res.render('editorial-list', { title: 'Content Editor', episodes, statusMap });
 });
 
 router.post('/settings/editorial', (req, res) => {

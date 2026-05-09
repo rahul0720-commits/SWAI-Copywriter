@@ -1,0 +1,47 @@
+<%- include('partials/head', { title: title }) %>
+
+<%
+const STATUS_LABEL = {
+  idle:          { label: 'Not started',    color: '#777587', bg: '#f3f4f6' },
+  pass1_pending: { label: 'Review Pass 1',  color: '#92400e', bg: '#fef3c7' },
+  pass1_applied: { label: 'Pass 1 done',    color: '#1e40af', bg: '#dbeafe' },
+  pass2_pending: { label: 'Review Pass 2',  color: '#92400e', bg: '#fef3c7' },
+  pass2_applied: { label: 'Complete',       color: '#065f46', bg: '#d1fae5' },
+};
+%>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+  <div>
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;">Content Editor</h1>
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">Select a distribution copy to upload your transcript and run editorial passes.</p>
+  </div>
+</div>
+
+<% if (episodes.length === 0) { %>
+  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:60px;text-align:center;">
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 16px;">No distribution copies yet.</p>
+    <a href="/" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;">
+      Create one first
+    </a>
+  </div>
+<% } else { %>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <% episodes.forEach(ep => {
+      const status = statusMap[ep.id] || 'idle';
+      const st = STATUS_LABEL[status] || STATUS_LABEL.idle;
+    %>
+    <a href="/episodes/<%= ep.id %>/editorial" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:16px 20px;text-decoration:none;transition:border-color 0.15s,box-shadow 0.15s;" onmouseover="this.style.borderColor='#ba4b1d';this.style.boxShadow='0 0 0 3px rgba(186,75,29,0.08)'" onmouseout="this.style.borderColor='#c7c4d8';this.style.boxShadow='none'">
+      <div style="min-width:0;">
+        <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#1f1b17;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= ep.title %></div>
+        <div style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;">
+          <% if (ep.guest_name) { %>with <%= ep.guest_name %> &middot; <% } %>
+          <%= new Date(ep.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
+        </div>
+      </div>
+      <span style="flex-shrink:0;font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;color:<%= st.color %>;background:<%= st.bg %>;white-space:nowrap;"><%= st.label %></span>
+    </a>
+    <% }); %>
+  </div>
+<% } %>
+
+<%- include('partials/foot') %>
