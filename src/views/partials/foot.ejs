@@ -6,7 +6,9 @@
   const path = window.location.pathname;
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
-    if (nav === 'prompts' && path.startsWith('/settings')) {
+    if (nav === 'editorial-criteria' && path === '/settings/editorial') {
+      el.classList.add('active');
+    } else if (nav === 'prompts' && path.startsWith('/settings/prompts')) {
       el.classList.add('active');
     } else if (nav === 'episodes' && !path.startsWith('/settings')) {
       el.classList.add('active');

@@ -8,22 +8,28 @@
 </div>
 
 <!-- Back -->
-<div style="margin-bottom:24px;">
+<div style="margin-bottom:20px;">
   <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     All distribution copies
   </a>
 </div>
 
-<!-- Episode header -->
-<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;">
-  <div>
-    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
-    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">
-      <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
-      <%= new Date(episode.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
-    </p>
+<!-- Episode title + tab strip -->
+<div style="margin-bottom:28px;">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">
+    <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
+    <%= new Date(episode.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) %>
+  </p>
+  <div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;">
+    <a href="/episodes/<%= episode.id %>/editorial" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Editorial</a>
+    <a href="/episodes/<%= episode.id %>/review" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;text-decoration:none;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;">Distribution Copy</a>
   </div>
+</div>
+
+<!-- Episode actions -->
+<div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:28px;gap:10px;">
   <div style="display:flex;gap:10px;flex-shrink:0;">
     <% if (!episode.rahul_x) { %>
       <form action="/episodes/<%= episode.id %>/generate" method="POST">

@@ -1,0 +1,428 @@
+<%- include('partials/head', { title: title }) %>
+
+<%
+// ─── View helpers ────────────────────────────────────────────────────────────
+const CAT_LABEL = {
+  logistics: 'Logistics', tech_issue: 'Tech Issue', restart: 'Restart',
+  repeated_question: 'Repeated Q', dead_end: 'Dead End', off_topic: 'Off-Topic',
+  preamble: 'Preamble', post_wrap: 'Post-Wrap',
+  redundancy: 'Redundancy', tangent: 'Tangent', acknowledgment: 'Acknowledgment',
+  extra_example: 'Extra Example', wandering: 'Wandering', misplaced: 'Misplaced',
+};
+const CONF_COLOR = { HIGH: '#ba1a1a', MEDIUM: '#92400e', LOW: '#464555' };
+const CONF_BG    = { HIGH: '#fde8d6', MEDIUM: '#fef3c7', LOW: '#f3f4f6' };
+
+function flagDecision(decisions, flagId) {
+  return decisions[flagId]?.action ?? 'pending';
+}
+function cutCount(flags, decisions) {
+  return flags.filter(f => (decisions[f.id]?.action ?? 'accept') === 'accept').length;
+}
+const p1Cuts   = cutCount(pass1Flags, pass1Decisions);
+const p2Cuts   = cutCount(pass2Flags, pass2Decisions);
+const hasAudio = session.audio_file_path && session.audio_file_name;
+
+// Phase order
+const PHASES = ['idle','pass1_pending','pass1_applied','pass2_pending','pass2_applied'];
+const phaseIdx = PHASES.indexOf(session.status);
+%>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="loading-overlay" style="display:none;">
+  <div class="spinner"></div>
+  <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">Running editorial pass…</p>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:4px 0 0;">Claude is analysing the transcript. This takes 30–60 seconds.</p>
+</div>
+
+<!-- Back link -->
+<div style="margin-bottom:20px;">
+  <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    All distribution copies
+  </a>
+</div>
+
+<!-- Episode header + tab strip -->
+<div style="margin-bottom:24px;">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">
+    <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
+    <%= new Date(episode.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %>
+  </p>
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;">
+    <a href="/episodes/<%= episode.id %>/editorial" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;text-decoration:none;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;">Editorial</a>
+    <a href="/episodes/<%= episode.id %>/review" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Distribution Copy</a>
+  </div>
+</div>
+
+<!-- Progress indicator -->
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:32px;flex-wrap:wrap;">
+  <% const steps = [
+    {key:'idle',        label:'Upload'},
+    {key:'pass1_pending',label:'Review Pass 1'},
+    {key:'pass1_applied',label:'Pass 1 Done'},
+    {key:'pass2_pending',label:'Review Pass 2'},
+    {key:'pass2_applied',label:'Complete'},
+  ]; %>
+  <% steps.forEach((step, i) => {
+    const done = phaseIdx > i;
+    const active = phaseIdx === i;
+  %>
+    <span style="font-family:'Inter',sans-serif;font-size:12px;font-weight:<%= active?'700':'500' %>;color:<%= active?'#ba4b1d':done?'#465555':'#c7c4d8' %>;white-space:nowrap;"><%= step.label %></span>
+    <% if (i < steps.length - 1) { %><span style="color:#c7c4d8;font-size:12px;">›</span><% } %>
+  <% }); %>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════ PHASE: IDLE ══════ -->
+<% if (session.status === 'idle') { %>
+
+<div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:32px;max-width:640px;">
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#1f1b17;margin:0 0 6px;">Start editorial</h2>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 24px;">Pass 1 analyses the transcript for hard cuts (logistics, tech issues, restarts). Audio upload is optional — it enables inline playback during Pass 2 review.</p>
+
+  <!-- Audio upload (optional) -->
+  <div style="margin-bottom:24px;">
+    <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Audio file <span style="font-weight:400;color:#777587;">(optional — for playback during Pass 2)</span></div>
+    <form action="/episodes/<%= episode.id %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
+      <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
+    </form>
+    <% if (hasAudio) { %>
+      <p style="font-size:12px;color:#065f46;margin:6px 0 0;">✓ <%= session.audio_file_name %> uploaded</p>
+    <% } %>
+  </div>
+
+  <div style="border-top:1px solid #ece1cd;padding-top:20px;">
+    <div style="font-size:12px;color:#777587;margin-bottom:12px;">Show criteria: <a href="/settings/editorial" style="color:#ba4b1d;text-decoration:none;" target="_blank">edit ↗</a></div>
+    <pre style="font-family:'Inter',sans-serif;font-size:12px;color:#464555;background:#fcf2eb;border:1px solid #fde8d6;border-radius:6px;padding:12px;white-space:pre-wrap;margin:0 0 20px;"><%= showCriteria %></pre>
+    <form action="/episodes/<%= episode.id %>/editorial/run-pass/1" method="POST">
+      <button type="submit" onclick="document.getElementById('loading-overlay').style.display='flex';" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        Run Pass 1 — Hard Cuts
+      </button>
+    </form>
+  </div>
+</div>
+
+<% } %>
+
+
+<!-- ══════════════════════════════════════════ PHASE: PASS 1 PENDING ══════ -->
+<% if (session.status === 'pass1_pending') { %>
+
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+  <div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#1f1b17;margin:0 0 4px;">Pass 1 — Hard Cuts</h2>
+    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;"><%= pass1Flags.length %> flag<%= pass1Flags.length !== 1 ? 's' : '' %> · <span id="cut-counter-1"><%= p1Cuts %></span> queued to cut · Review and mark "Keep" for anything you want to preserve</p>
+  </div>
+  <form action="/episodes/<%= episode.id %>/editorial/apply/1" method="POST">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Apply Pass 1 Cuts →
+    </button>
+  </form>
+</div>
+
+<% if (pass1Flags.length === 0) { %>
+  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:40px;text-align:center;">
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">No hard cuts found — the transcript looks clean.</p>
+  </div>
+<% } %>
+
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+<% pass1Flags.forEach(flag => {
+  const dec = flagDecision(pass1Decisions, flag.id);
+%>
+  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:18px 20px;">
+    <!-- Flag header -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+      <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:#777587;"><%= flag.start_time %> – <%= flag.end_time %></span>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#fde8d6;color:#8c3213;text-transform:uppercase;letter-spacing:0.05em;"><%= CAT_LABEL[flag.category] || flag.category %></span>
+      <span style="font-size:12px;font-weight:500;color:#464555;"><%= flag.speaker %></span>
+    </div>
+    <!-- Flagged text -->
+    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;margin:0 0 8px;line-height:1.5;background:#fcf2eb;padding:8px 12px;border-radius:5px;border-left:3px solid #fde8d6;">
+      <%= flag.text %><% if (flag.text && flag.text.length >= 195) { %>…<% } %>
+    </p>
+    <!-- Reason -->
+    <p style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;margin:0 0 12px;"><%= flag.reason %></p>
+    <!-- Decision -->
+    <% if (dec === 'pending') { %>
+      <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button
+          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-vals='{"flagId":"${flag.id}","action":"accept","pass":"1"}'
+          hx-target="#decision-${flag.id}"
+          hx-swap="outerHTML"
+          style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:#ba1a1a;color:#fff;border:none;cursor:pointer;">Cut</button>
+        <button
+          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-vals='{"flagId":"${flag.id}","action":"reject","pass":"1"}'
+          hx-target="#decision-${flag.id}"
+          hx-swap="outerHTML"
+          style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:none;color:#464555;border:1px solid #c7c4d8;cursor:pointer;">Keep</button>
+      </div>` %>
+    <% } else { %>
+      <%
+        const badgeCfg = {accept:{label:'Cut',color:'#ba1a1a',bg:'#fde8d6'},reject:{label:'Keep',color:'#065f46',bg:'#d1fae5'}};
+        const bc = badgeCfg[dec] || badgeCfg.accept;
+      %>
+      <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;color:${bc.color};background:${bc.bg};">${bc.label}</span>
+        <button hx-post="/episodes/${episode.id}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"1"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
+      </div>` %>
+    <% } %>
+  </div>
+<% }); %>
+</div>
+
+<div style="display:flex;justify-content:flex-end;">
+  <form action="/episodes/<%= episode.id %>/editorial/apply/1" method="POST">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Apply Pass 1 Cuts →
+    </button>
+  </form>
+</div>
+
+<% } %>
+
+
+<!-- ══════════════════════════════════════════ PHASE: PASS 1 APPLIED ══════ -->
+<% if (session.status === 'pass1_applied') { %>
+
+<div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+  <svg width="20" height="20" fill="none" stroke="#065f46" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <div>
+    <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#065f46;">Pass 1 complete — <%= p1Cuts %> cut<%= p1Cuts !== 1 ? 's' : '' %> applied</div>
+    <div style="font-family:'Inter',sans-serif;font-size:13px;color:#065f46;">v1 transcript ready. Run Pass 2 for soft cuts and judgment calls.</div>
+  </div>
+</div>
+
+<!-- Audio upload for Pass 2 -->
+<div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:24px;margin-bottom:20px;">
+  <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0 0 12px;">Pass 2 — Soft Cuts</h3>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">Analyses v1 transcript for redundancy, tangents, wandering answers, and misplaced content. Judgment calls with confidence levels.</p>
+
+  <% if (!hasAudio) { %>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Upload audio <span style="font-weight:400;color:#777587;">(enables inline playback during review)</span></div>
+      <form action="/episodes/<%= episode.id %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
+        <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
+      </form>
+    </div>
+  <% } else { %>
+    <p style="font-size:13px;color:#065f46;margin:0 0 20px;">✓ Audio: <%= session.audio_file_name %></p>
+  <% } %>
+
+  <form action="/episodes/<%= episode.id %>/editorial/run-pass/2" method="POST">
+    <button type="submit" onclick="document.getElementById('loading-overlay').style.display='flex';" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      Run Pass 2 — Soft Cuts
+    </button>
+  </form>
+</div>
+
+<!-- v1 transcript (collapsed) -->
+<details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;">
+  <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    v1 transcript (after Pass 1 cuts)
+  </summary>
+  <pre style="margin:0;padding:0 20px 20px;font-family:'Space Grotesk',monospace;font-size:12px;color:#464555;white-space:pre-wrap;line-height:1.6;max-height:400px;overflow-y:auto;border-top:1px solid #ece1cd;"><%= session.transcript_v1 %></pre>
+</details>
+
+<% } %>
+
+
+<!-- ══════════════════════════════════════════ PHASE: PASS 2 PENDING ══════ -->
+<% if (session.status === 'pass2_pending') { %>
+
+<% if (hasAudio) { %>
+<audio id="ep-audio" preload="none" style="display:none;">
+  <source src="/episodes/<%= episode.id %>/editorial/audio">
+</audio>
+<% } %>
+
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+  <div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#1f1b17;margin:0 0 4px;">Pass 2 — Soft Cuts</h2>
+    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;"><%= pass2Flags.length %> flag<%= pass2Flags.length !== 1 ? 's' : '' %> · <span id="cut-counter-2"><%= p2Cuts %></span> queued to cut · Review each flag and use "Keep" or "Relocate" as needed</p>
+  </div>
+  <form action="/episodes/<%= episode.id %>/editorial/apply/2" method="POST">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Apply Pass 2 Cuts →
+    </button>
+  </form>
+</div>
+
+<!-- Pass 1 summary (collapsed) -->
+<details style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:0;margin-bottom:20px;">
+  <summary style="padding:12px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#065f46;cursor:pointer;list-style:none;">
+    Pass 1 complete — <%= p1Cuts %> cut<%= p1Cuts !== 1 ? 's' : '' %> applied
+  </summary>
+  <div style="padding:0 16px 12px;font-family:'Inter',sans-serif;font-size:12px;color:#065f46;">
+    <% pass1Flags.filter(f=>(pass1Decisions[f.id]?.action??'accept')==='accept').forEach(f => { %>
+      <div style="padding:4px 0;border-top:1px solid #a7f3d0;">~~<%= f.start_time %> – <%= f.end_time %>~~ · <%= CAT_LABEL[f.category]||f.category %> · <%= f.reason %></div>
+    <% }); %>
+  </div>
+</details>
+
+<% if (pass2Flags.length === 0) { %>
+  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:40px;text-align:center;margin-bottom:24px;">
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">No soft cuts found — the transcript is tight.</p>
+  </div>
+<% } %>
+
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+<% pass2Flags.forEach(flag => {
+  const dec = flagDecision(pass2Decisions, flag.id);
+  const confColor = CONF_COLOR[flag.confidence] || '#464555';
+  const confBg    = CONF_BG[flag.confidence]    || '#f3f4f6';
+%>
+  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:18px 20px;">
+    <!-- Flag header -->
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+      <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:#777587;"><%= flag.start_time %> – <%= flag.end_time %></span>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#fef3c7;color:#92400e;text-transform:uppercase;letter-spacing:0.05em;"><%= CAT_LABEL[flag.category] || flag.category %></span>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:<%= confBg %>;color:<%= confColor %>;"><%= flag.confidence %></span>
+      <span style="font-size:12px;font-weight:500;color:#464555;"><%= flag.speaker %></span>
+    </div>
+    <!-- Flagged text -->
+    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;margin:0 0 8px;line-height:1.5;background:#fcf2eb;padding:8px 12px;border-radius:5px;border-left:3px solid #fde8d6;">
+      <%= flag.text %><% if (flag.text && flag.text.length >= 195) { %>…<% } %>
+    </p>
+    <!-- Reason + audio signal -->
+    <p style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;margin:0 0 4px;"><%= flag.reason %></p>
+    <% if (flag.audio_signal) { %>
+      <p style="font-family:'Inter',sans-serif;font-size:12px;color:#92400e;margin:0 0 12px;">🎧 <%= flag.audio_signal %></p>
+    <% } else { %>
+      <div style="margin-bottom:12px;"></div>
+    <% } %>
+    <!-- Audio play button -->
+    <% if (hasAudio) { %>
+      <button onclick="playSegment(<%= flag.start_secs %>, <%= flag.end_secs %>)" style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid #c7c4d8;color:#464555;padding:4px 12px;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;margin-bottom:12px;">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        Play segment
+      </button>
+    <% } %>
+    <!-- Decision -->
+    <% if (dec === 'pending') { %>
+      <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <input id="reason-${flag.id}" name="reason" type="text" placeholder="Reason to keep (optional — adds to keep list)" style="flex:1;padding:5px 10px;border:1px solid #c7c4d8;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;color:#1f1b17;background:#fff;min-width:200px;">
+        <button
+          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-vals='{"flagId":"${flag.id}","action":"accept","pass":"2"}'
+          hx-target="#decision-${flag.id}"
+          hx-swap="outerHTML"
+          style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:#ba1a1a;color:#fff;border:none;cursor:pointer;">Cut</button>
+        <button
+          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-vals='{"flagId":"${flag.id}","action":"reject","pass":"2"}'
+          hx-include="#reason-${flag.id}"
+          hx-target="#decision-${flag.id}"
+          hx-swap="outerHTML"
+          style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:none;color:#464555;border:1px solid #c7c4d8;cursor:pointer;">Keep</button>
+        <button
+          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-vals='{"flagId":"${flag.id}","action":"relocate","pass":"2"}'
+          hx-target="#decision-${flag.id}"
+          hx-swap="outerHTML"
+          style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:none;color:#92400e;border:1px solid #fde68a;cursor:pointer;">Relocate</button>
+      </div>` %>
+    <% } else { %>
+      <%
+        const badgeCfg2 = {
+          accept:   {label:'Cut',      color:'#ba1a1a', bg:'#fde8d6'},
+          reject:   {label:'Keep',     color:'#065f46', bg:'#d1fae5'},
+          relocate: {label:'Relocate', color:'#92400e', bg:'#fef3c7'},
+        };
+        const bc2 = badgeCfg2[dec] || badgeCfg2.accept;
+      %>
+      <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;color:${bc2.color};background:${bc2.bg};">${bc2.label}</span>
+        <button hx-post="/episodes/${episode.id}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"2"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
+      </div>` %>
+    <% } %>
+  </div>
+<% }); %>
+</div>
+
+<div style="display:flex;justify-content:flex-end;">
+  <form action="/episodes/<%= episode.id %>/editorial/apply/2" method="POST">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      Apply Pass 2 Cuts →
+    </button>
+  </form>
+</div>
+
+<% } %>
+
+
+<!-- ══════════════════════════════════════════ PHASE: PASS 2 APPLIED ══════ -->
+<% if (session.status === 'pass2_applied') { %>
+
+<!-- Send to copywriter CTA -->
+<div style="background:#fff;border:2px solid #ba4b1d;border-radius:8px;padding:28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+  <div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#1f1b17;margin:0 0 6px;">Editorial complete</h2>
+    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">Pass 1: <%= p1Cuts %> cut<%= p1Cuts!==1?'s':'' %> &nbsp;·&nbsp; Pass 2: <%= p2Cuts %> cut<%= p2Cuts!==1?'s':'' %> &nbsp;·&nbsp; v2 transcript ready</p>
+  </div>
+  <form action="/episodes/<%= episode.id %>/editorial/send-to-copywriter" method="POST">
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Send to Copywriter
+    </button>
+  </form>
+</div>
+
+<!-- Suggested edits markdown -->
+<details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;margin-bottom:16px;" open>
+  <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;">
+    <span style="display:flex;align-items:center;gap:8px;">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      Suggested edits — copy to share with video editor
+    </span>
+    <button onclick="event.stopPropagation();copyMarkdown()" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;background:#ba4b1d;color:#fff;border:none;cursor:pointer;">Copy</button>
+  </summary>
+  <pre id="suggested-edits-md" style="margin:0;padding:0 20px 20px;font-family:'Space Grotesk',monospace;font-size:12px;color:#464555;white-space:pre-wrap;line-height:1.7;max-height:500px;overflow-y:auto;border-top:1px solid #ece1cd;"><%= suggestedEditsMarkdown %></pre>
+</details>
+
+<!-- v2 transcript (collapsed) -->
+<details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;">
+  <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    v2 transcript (final, feeds copywriter)
+  </summary>
+  <pre style="margin:0;padding:0 20px 20px;font-family:'Space Grotesk',monospace;font-size:12px;color:#464555;white-space:pre-wrap;line-height:1.6;max-height:400px;overflow-y:auto;border-top:1px solid #ece1cd;"><%= session.transcript_v2 %></pre>
+</details>
+
+<% } %>
+
+
+<script>
+function playSegment(start, end) {
+  const audio = document.getElementById('ep-audio');
+  if (!audio) return;
+  audio.currentTime = start;
+  audio.play();
+  const check = setInterval(() => {
+    if (audio.currentTime >= end) { audio.pause(); clearInterval(check); }
+  }, 200);
+  audio.onended = () => clearInterval(check);
+}
+
+function copyMarkdown() {
+  const el = document.getElementById('suggested-edits-md');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+</script>
+
+<%- include('partials/foot') %>

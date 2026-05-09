@@ -1,5 +1,63 @@
 import SrtParser from 'srt-parser-2';
 
+function timeToSeconds(t) {
+  const parts = t.replace(',', '.').split(':');
+  return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+}
+
+function detectFormat(raw) {
+  if (/\d{2}:\d{2}:\d{2}[,.]\d{3} --> \d{2}:\d{2}:\d{2}[,.]\d{3}/.test(raw)) return 'srt';
+  return 'txt';
+}
+
+function applySrtCuts(content, cutRanges) {
+  const blocks = content.split(/\n\s*\n/).filter(b => b.trim());
+  const kept = [];
+
+  for (const block of blocks) {
+    const tsMatch = block.match(/(\d{1,2}:\d{2}:\d{2})[,.]\d{3} --> (\d{1,2}:\d{2}:\d{2})[,.]\d{3}/);
+    if (!tsMatch) continue;
+
+    const segStart = timeToSeconds(tsMatch[1]);
+    const inCutRange = cutRanges.some(r => segStart >= r.start - 1 && segStart <= r.end + 1);
+    if (!inCutRange) kept.push(block);
+  }
+
+  return kept
+    .map((block, i) => block.replace(/^\d+/, String(i + 1)))
+    .join('\n\n');
+}
+
+function applyTxtCuts(content, flags) {
+  let result = content;
+  for (const f of flags) {
+    if (f.text && f.text.length > 20) {
+      result = result.replace(f.text.slice(0, 100), '');
+    }
+  }
+  return result.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+export function applyEditorialCuts(rawTranscript, acceptedFlags) {
+  if (!acceptedFlags || acceptedFlags.length === 0) return rawTranscript;
+
+  const cutRanges = acceptedFlags
+    .filter(f => f.start_time && f.end_time)
+    .map(f => ({ start: timeToSeconds(f.start_time), end: timeToSeconds(f.end_time) }));
+
+  if (detectFormat(rawTranscript) === 'srt') {
+    return applySrtCuts(rawTranscript, cutRanges);
+  }
+  return applyTxtCuts(rawTranscript, acceptedFlags);
+}
+
+export function cleanTranscriptForCopywriter(rawTranscript) {
+  const fmt = detectFormat(rawTranscript);
+  const buf = Buffer.from(rawTranscript);
+  if (fmt === 'srt') return parseSrt(buf);
+  return parseTxt(buf);
+}
+
 /**
  * Parse an SRT file buffer into clean conversation text
  */

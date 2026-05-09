@@ -63,6 +63,49 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS editorial_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    episode_id INTEGER NOT NULL UNIQUE,
+    status TEXT NOT NULL DEFAULT 'idle',
+    audio_file_path TEXT,
+    audio_file_name TEXT,
+    pass1_json TEXT,
+    pass2_json TEXT,
+    pass1_decisions TEXT NOT NULL DEFAULT '{}',
+    pass2_decisions TEXT NOT NULL DEFAULT '{}',
+    transcript_v1 TEXT,
+    transcript_v2 TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (episode_id) REFERENCES episodes(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS keep_list (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pattern TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    episode_id INTEGER,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS show_criteria (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    criteria_text TEXT NOT NULL DEFAULT 'Shipping with AI show criteria:
+1. Keep all moments of genuine insight, vulnerability, and lived experience.
+2. Remove logistics, tech issues, restarts, and repeated questions.
+3. Preserve energy and banter that reflects the show tone — warmth matters.
+4. Prioritise the guest''s strongest 3–5 insights per act.',
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  INSERT OR IGNORE INTO show_criteria (id, criteria_text) VALUES (1, 'Shipping with AI show criteria:
+1. Keep all moments of genuine insight, vulnerability, and lived experience.
+2. Remove logistics, tech issues, restarts, and repeated questions.
+3. Preserve energy and banter that reflects the show tone — warmth matters.
+4. Prioritise the guest''s strongest 3–5 insights per act.');
+`);
+
 // Add new columns to existing DBs (ALTER TABLE ignores duplicates via try/catch)
 const newCols = [
   ['rahul_x', 'TEXT'],
