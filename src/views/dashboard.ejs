@@ -3,12 +3,12 @@
 <!-- Page header -->
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px;">
   <div>
-    <h1 style="font-family:'Inter',sans-serif; font-size:28px; font-weight:700; color:#1f1b17; letter-spacing:-0.02em; margin:0;">Episodes</h1>
-    <p style="font-family:'Inter',sans-serif; font-size:15px; color:#777587; margin:4px 0 0;">Upload a transcript and generate content for each episode.</p>
+    <h1 style="font-family:'Inter',sans-serif; font-size:28px; font-weight:700; color:#1f1b17; letter-spacing:-0.02em; margin:0;">Distribution Copies</h1>
+    <p style="font-family:'Inter',sans-serif; font-size:15px; color:#777587; margin:4px 0 0;">Upload a transcript and generate content for each distribution copy.</p>
   </div>
   <button onclick="toggleUploadForm()" id="new-episode-btn" style="display:flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#8c3213'" onmouseout="this.style.background='#ba4b1d'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    New Episode
+    New Distribution Copy
   </button>
 </div>
 
@@ -16,7 +16,7 @@
 <div id="upload-form-panel" style="display:none; margin-bottom:28px;">
   <div style="background:#ffffff; border:1px solid #c7c4d8; border-radius:8px; padding:28px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-      <h2 style="font-family:'Inter',sans-serif; font-size:16px; font-weight:600; color:#1f1b17; margin:0;">New Episode</h2>
+      <h2 style="font-family:'Inter',sans-serif; font-size:16px; font-weight:600; color:#1f1b17; margin:0;">New Distribution Copy</h2>
       <button onclick="toggleUploadForm()" style="background:none;border:none;cursor:pointer;color:#777587;padding:4px;">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
@@ -24,7 +24,7 @@
     <form action="/episodes" method="POST" enctype="multipart/form-data">
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
         <div>
-          <label style="display:block;font-size:13px;font-weight:500;color:#464555;margin-bottom:6px;">Episode Title <span style="color:#ba1a1a;">*</span></label>
+          <label style="display:block;font-size:13px;font-weight:500;color:#464555;margin-bottom:6px;">Distribution Copy Title <span style="color:#ba1a1a;">*</span></label>
           <input type="text" name="title" required style="width:100%;padding:8px 12px;border:1px solid #c7c4d8;border-radius:6px;font-size:14px;color:#1f1b17;background:#fff;box-sizing:border-box;">
         </div>
         <div>
@@ -57,14 +57,14 @@
 <% if (episodes.length === 0) { %>
   <div style="text-align:center;padding:80px 0;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;">
     <svg width="40" height="40" fill="none" stroke="#c7c4d8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 6px;">No episodes yet</p>
-    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#c7c4d8;margin:0;">Click "New Episode" above to get started.</p>
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 6px;">No distribution copies yet</p>
+    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#c7c4d8;margin:0;">Click "New Distribution Copy" above to get started.</p>
   </div>
 <% } else { %>
 
   <!-- Column headers -->
   <div style="display:grid;grid-template-columns:1fr 160px 160px 120px;gap:16px;padding:0 16px 10px;align-items:center;">
-    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Episode</span>
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Distribution Copy</span>
     <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Guest</span>
     <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Date</span>
     <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Status</span>
