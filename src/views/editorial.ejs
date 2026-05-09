@@ -80,7 +80,20 @@ const phaseIdx = PHASES.indexOf(session.status);
 
 <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:32px;max-width:640px;">
   <h2 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#1f1b17;margin:0 0 6px;">Start editorial</h2>
-  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 24px;">Pass 1 analyses the transcript for hard cuts (logistics, tech issues, restarts). Audio upload is optional — it enables inline playback during Pass 2 review.</p>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 24px;">Upload your transcript and optionally the audio file, then run Pass 1 to flag hard cuts.</p>
+
+  <!-- Transcript upload (Pass 1) -->
+  <div style="margin-bottom:20px;">
+    <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Transcript file <span style="font-weight:400;color:#777587;">(.txt or .srt)</span></div>
+    <% if (episode.transcript_raw || episode.transcript_clean) { %>
+      <p style="font-size:12px;color:#065f46;margin:0 0 8px;">✓ Transcript loaded</p>
+    <% } %>
+    <form action="/episodes/<%= episode.id %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <input type="hidden" name="pass" value="1">
+      <input type="file" name="transcript" accept=".txt,.srt" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
+      <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
+    </form>
+  </div>
 
   <!-- Audio upload (optional) -->
   <div style="margin-bottom:24px;">
@@ -204,9 +217,19 @@ const phaseIdx = PHASES.indexOf(session.status);
   <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0 0 12px;">Pass 2 — Soft Cuts</h3>
   <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">Analyses v1 transcript for redundancy, tangents, wandering answers, and misplaced content. Judgment calls with confidence levels.</p>
 
+  <!-- Transcript upload (override v1 for Pass 2) -->
+  <div style="margin-bottom:20px;">
+    <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:4px;">Transcript for Pass 2 <span style="font-weight:400;color:#777587;">(optional — upload to override the auto-cut v1)</span></div>
+    <form action="/episodes/<%= episode.id %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <input type="hidden" name="pass" value="2">
+      <input type="file" name="transcript" accept=".txt,.srt" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
+      <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
+    </form>
+  </div>
+
   <% if (!hasAudio) { %>
     <div style="margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Upload audio <span style="font-weight:400;color:#777587;">(enables inline playback during review)</span></div>
+      <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Audio file <span style="font-weight:400;color:#777587;">(enables inline playback during review)</span></div>
       <form action="/episodes/<%= episode.id %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
         <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>

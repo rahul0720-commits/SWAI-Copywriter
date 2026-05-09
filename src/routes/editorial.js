@@ -9,6 +9,7 @@ import { applyEditorialCuts, cleanTranscriptForCopywriter } from '../services/tr
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const upload = multer({ dest: join(__dirname, '..', '..', 'uploads') });
+const transcriptUpload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -165,6 +166,24 @@ router.post('/episodes/:id/editorial/upload-audio', upload.single('audio'), (req
   if (!req.file) return res.redirect(`/episodes/${req.params.id}/editorial`);
   db.prepare(`UPDATE editorial_sessions SET audio_file_path = ?, audio_file_name = ?, updated_at = datetime('now') WHERE episode_id = ?`)
     .run(req.file.path, req.file.originalname, req.params.id);
+  res.redirect(`/episodes/${req.params.id}/editorial`);
+});
+
+// ─── POST /:id/editorial/upload-transcript ────────────────────────────────────
+
+router.post('/episodes/:id/editorial/upload-transcript', transcriptUpload.single('transcript'), (req, res) => {
+  if (!req.file) return res.redirect(`/episodes/${req.params.id}/editorial`);
+  const content = req.file.buffer.toString('utf-8');
+  const pass = req.body.pass || '1';
+
+  if (pass === '2') {
+    db.prepare(`UPDATE editorial_sessions SET transcript_v1 = ?, status = 'pass1_applied', updated_at = datetime('now') WHERE episode_id = ?`)
+      .run(content, req.params.id);
+  } else {
+    db.prepare(`UPDATE episodes SET transcript_raw = ?, updated_at = datetime('now') WHERE id = ?`)
+      .run(content, req.params.id);
+  }
+
   res.redirect(`/episodes/${req.params.id}/editorial`);
 });
 
