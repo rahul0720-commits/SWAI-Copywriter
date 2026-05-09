@@ -55,11 +55,14 @@ router.get('/settings/editorial', (req, res) => {
   res.render('editorial-list', { title: 'Content Editor', sessions });
 });
 
-router.post('/settings/editorial/new', transcriptUpload.single('transcript'), (req, res) => {
+router.post('/settings/editorial/new', upload.fields([{ name: 'transcript', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), async (req, res) => {
   const { title, guest_name } = req.body;
-  if (!title || !req.file) return res.redirect('/settings/editorial');
+  const transcriptFile = req.files?.transcript?.[0];
+  const audioFile = req.files?.audio?.[0];
+  if (!title || !transcriptFile) return res.redirect('/settings/editorial');
 
-  const transcript = req.file.buffer.toString('utf-8');
+  const { readFileSync } = await import('fs');
+  const transcript = readFileSync(transcriptFile.path, 'utf-8');
 
   const epResult = db.prepare(`
     INSERT INTO episodes (title, guest_name, transcript_raw, created_at, updated_at)
@@ -67,7 +70,11 @@ router.post('/settings/editorial/new', transcriptUpload.single('transcript'), (r
   `).run(title.trim(), guest_name?.trim() || null, transcript);
 
   const episodeId = epResult.lastInsertRowid;
-  db.prepare('INSERT INTO editorial_sessions (episode_id) VALUES (?)').run(episodeId);
+
+  db.prepare(`
+    INSERT INTO editorial_sessions (episode_id, audio_file_path, audio_file_name)
+    VALUES (?, ?, ?)
+  `).run(episodeId, audioFile?.path || null, audioFile?.originalname || null);
 
   res.redirect(`/episodes/${episodeId}/editorial`);
 });

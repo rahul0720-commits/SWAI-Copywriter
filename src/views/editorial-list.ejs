@@ -31,9 +31,15 @@ const STATUS_LABEL = {
       </div>
     </div>
 
-    <div style="margin-bottom:20px;">
-      <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Transcript file <span style="color:#ba4b1d;">*</span> <span style="font-weight:400;color:#777587;">(.txt or .srt)</span></label>
-      <input type="file" name="transcript" accept=".txt,.srt" required style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;width:100%;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Transcript file <span style="color:#ba4b1d;">*</span> <span style="font-weight:400;color:#777587;">(.txt or .srt)</span></label>
+        <input type="file" name="transcript" accept=".txt,.srt" required style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;width:100%;">
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Audio file <span style="font-weight:400;color:#777587;">(optional — for Pass 2 playback)</span></label>
+        <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;width:100%;">
+      </div>
     </div>
 
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 22px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
