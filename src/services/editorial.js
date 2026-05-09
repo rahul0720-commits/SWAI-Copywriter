@@ -3,10 +3,16 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { config } from '../config.js';
+import db from '../db.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const promptsDir = join(__dirname, '..', 'prompts');
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
+
+function getPrompt(name, file) {
+  const row = db.prepare('SELECT content FROM prompts WHERE name = ?').get(name);
+  return row ? row.content : readFileSync(join(promptsDir, file), 'utf-8');
+}
 
 function extractJson(text) {
   const match = text.match(/\[[\s\S]*\]/);
@@ -19,7 +25,7 @@ function extractJson(text) {
 }
 
 export async function runPass1(transcript, metadata, showCriteria) {
-  const template = readFileSync(join(promptsDir, 'editorial-pass1.txt'), 'utf-8');
+  const template = getPrompt('editorial-pass1', 'editorial-pass1.txt');
   const system = template
     .replace('{show_criteria}', showCriteria)
     .replace('{episode_title}', metadata.title || 'Untitled')
@@ -36,7 +42,7 @@ export async function runPass1(transcript, metadata, showCriteria) {
 }
 
 export async function runPass2(transcript, metadata, showCriteria, keepList) {
-  const template = readFileSync(join(promptsDir, 'editorial-pass2.txt'), 'utf-8');
+  const template = getPrompt('editorial-pass2', 'editorial-pass2.txt');
   const keepListText = keepList.length === 0
     ? 'None yet.'
     : keepList.map(k => `- "${k.pattern}" — ${k.reason}`).join('\n');
