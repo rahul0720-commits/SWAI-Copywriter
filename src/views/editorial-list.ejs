@@ -2,41 +2,58 @@
 
 <%
 const STATUS_LABEL = {
-  idle:          { label: 'Not started',    color: '#777587', bg: '#f3f4f6' },
-  pass1_pending: { label: 'Review Pass 1',  color: '#92400e', bg: '#fef3c7' },
-  pass1_applied: { label: 'Pass 1 done',    color: '#1e40af', bg: '#dbeafe' },
-  pass2_pending: { label: 'Review Pass 2',  color: '#92400e', bg: '#fef3c7' },
-  pass2_applied: { label: 'Complete',       color: '#065f46', bg: '#d1fae5' },
+  idle:          { label: 'Not started',   color: '#777587', bg: '#f3f4f6' },
+  pass1_pending: { label: 'Review Pass 1', color: '#92400e', bg: '#fef3c7' },
+  pass1_applied: { label: 'Pass 1 done',   color: '#1e40af', bg: '#dbeafe' },
+  pass2_pending: { label: 'Review Pass 2', color: '#92400e', bg: '#fef3c7' },
+  pass2_applied: { label: 'Complete',      color: '#065f46', bg: '#d1fae5' },
 };
 %>
 
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
-  <div>
-    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;">Content Editor</h1>
-    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">Select a distribution copy to upload your transcript and run editorial passes.</p>
-  </div>
+<div style="margin-bottom:32px;">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;">Content Editor</h1>
+  <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">Upload your raw transcript and audio, run editorial passes, then send the cleaned transcript to Distribution Copy.</p>
 </div>
 
-<% if (episodes.length === 0) { %>
-  <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:60px;text-align:center;">
-    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 16px;">No distribution copies yet.</p>
-    <a href="/" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;">
-      Create one first
-    </a>
-  </div>
-<% } else { %>
+<!-- Upload form -->
+<div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:28px;margin-bottom:32px;max-width:640px;">
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#1f1b17;margin:0 0 20px;">Start a new editorial session</h2>
+  <form action="/settings/editorial/new" method="POST" enctype="multipart/form-data">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Episode title <span style="color:#ba4b1d;">*</span></label>
+        <input type="text" name="title" required placeholder="e.g. Rahul & John on shipping fast" style="width:100%;padding:9px 12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;background:#fff;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Guest name <span style="font-weight:400;color:#777587;">(optional)</span></label>
+        <input type="text" name="guest_name" placeholder="e.g. John Doe" style="width:100%;padding:9px 12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;background:#fff;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:600;color:#464555;margin-bottom:6px;">Transcript file <span style="color:#ba4b1d;">*</span> <span style="font-weight:400;color:#777587;">(.txt or .srt)</span></label>
+      <input type="file" name="transcript" accept=".txt,.srt" required style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;width:100%;">
+    </div>
+
+    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 22px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Start editing
+    </button>
+  </form>
+</div>
+
+<!-- In-progress sessions -->
+<% if (sessions.length > 0) { %>
+  <h2 style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#777587;letter-spacing:0.05em;text-transform:uppercase;margin:0 0 12px;">In progress</h2>
   <div style="display:flex;flex-direction:column;gap:8px;">
-    <% episodes.forEach(ep => {
-      const status = statusMap[ep.id] || 'idle';
-      const st = STATUS_LABEL[status] || STATUS_LABEL.idle;
+    <% sessions.forEach(s => {
+      const st = STATUS_LABEL[s.status] || STATUS_LABEL.idle;
     %>
-    <a href="/episodes/<%= ep.id %>/editorial" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:16px 20px;text-decoration:none;transition:border-color 0.15s,box-shadow 0.15s;" onmouseover="this.style.borderColor='#ba4b1d';this.style.boxShadow='0 0 0 3px rgba(186,75,29,0.08)'" onmouseout="this.style.borderColor='#c7c4d8';this.style.boxShadow='none'">
+    <a href="/episodes/<%= s.episode_id %>/editorial" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:14px 20px;text-decoration:none;transition:border-color 0.15s;" onmouseover="this.style.borderColor='#ba4b1d'" onmouseout="this.style.borderColor='#c7c4d8'">
       <div style="min-width:0;">
-        <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#1f1b17;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= ep.title %></div>
-        <div style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;">
-          <% if (ep.guest_name) { %>with <%= ep.guest_name %> &middot; <% } %>
-          <%= new Date(ep.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) %>
-        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#1f1b17;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= s.title %></div>
+        <% if (s.guest_name) { %><div style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;">with <%= s.guest_name %></div><% } %>
       </div>
       <span style="flex-shrink:0;font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;color:<%= st.color %>;background:<%= st.bg %>;white-space:nowrap;"><%= st.label %></span>
     </a>

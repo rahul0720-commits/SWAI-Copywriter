@@ -46,10 +46,30 @@ function countAccepted(flags, decisions) {
 // ─── Settings router (separate instance — mounted at '/' in index.js) ─────────
 
 router.get('/settings/editorial', (req, res) => {
-  const episodes = db.prepare('SELECT * FROM episodes ORDER BY created_at DESC').all();
-  const sessions = db.prepare('SELECT episode_id, status FROM editorial_sessions').all();
-  const statusMap = Object.fromEntries(sessions.map(s => [s.episode_id, s.status]));
-  res.render('editorial-list', { title: 'Content Editor', episodes, statusMap });
+  const sessions = db.prepare(`
+    SELECT es.*, e.title, e.guest_name, e.created_at as episode_created_at
+    FROM editorial_sessions es
+    JOIN episodes e ON e.id = es.episode_id
+    ORDER BY es.updated_at DESC
+  `).all();
+  res.render('editorial-list', { title: 'Content Editor', sessions });
+});
+
+router.post('/settings/editorial/new', transcriptUpload.single('transcript'), (req, res) => {
+  const { title, guest_name } = req.body;
+  if (!title || !req.file) return res.redirect('/settings/editorial');
+
+  const transcript = req.file.buffer.toString('utf-8');
+
+  const epResult = db.prepare(`
+    INSERT INTO episodes (title, guest_name, transcript_raw, created_at, updated_at)
+    VALUES (?, ?, ?, datetime('now'), datetime('now'))
+  `).run(title.trim(), guest_name?.trim() || null, transcript);
+
+  const episodeId = epResult.lastInsertRowid;
+  db.prepare('INSERT INTO editorial_sessions (episode_id) VALUES (?)').run(episodeId);
+
+  res.redirect(`/episodes/${episodeId}/editorial`);
 });
 
 router.post('/settings/editorial', (req, res) => {
