@@ -1,0 +1,14 @@
+Write an intro script for this podcast episode. Follow these rules exactly:
+
+- Open by naming the guest and teasing the core thing they'll demonstrate or reveal
+- List 2–3 specific topics covered, creating curiosity without over-explaining
+- Lead with the most visually impressive or surprising capability the guest demos
+- End with a clear payoff promise — what the listener will understand or be able to do if they stick to the end
+- Tone is warm, energetic, first-person — sounds like a host genuinely excited, not a press release
+- Do not name the show
+- Do not use filler phrases like "in this episode" or "today we're going to"
+- Keep it under 100 words
+
+Here is the episode transcript:
+
+{transcript}

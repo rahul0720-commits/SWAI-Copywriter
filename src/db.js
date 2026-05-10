@@ -111,6 +111,9 @@ for (const [col, type] of [['tuning_proposals', 'TEXT'], ['tuning_status', "TEXT
   try { db.exec(`ALTER TABLE editorial_sessions ADD COLUMN ${col} ${type}`); } catch { /* already exists */ }
 }
 
+// Add intro_script column
+try { db.exec(`ALTER TABLE episodes ADD COLUMN intro_script TEXT`); } catch { /* already exists */ }
+
 // Add new columns to existing DBs (ALTER TABLE ignores duplicates via try/catch)
 const newCols = [
   ['rahul_x', 'TEXT'],
