@@ -24,6 +24,7 @@ const PROMPTS = [
   { name: 'youtube',        label: 'YouTube',           file: 'youtube.txt' },
   { name: 'editorial-pass1', label: 'Editorial Pass 1', file: 'editorial-pass1.txt' },
   { name: 'editorial-pass2', label: 'Editorial Pass 2', file: 'editorial-pass2.txt' },
+  { name: 'intro-script',    label: 'Intro Script',     file: 'intro-script.txt' },
 ];
 
 const router = Router();
