@@ -89,6 +89,17 @@ export async function generateYouTube(transcript, metadata) {
   return response.content[0].text;
 }
 
+export async function generateIntroScript(transcript, metadata) {
+  const system = loadPrompt('intro-script', 'intro-script.txt', { transcript });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 512,
+    system,
+    messages: [{ role: 'user', content: userMessage(metadata) }],
+  });
+  return response.content[0].text;
+}
+
 export async function generateAllContent(transcript, metadata, hostName = 'Rahul') {
   const [rahulX, gauthamX, brandX, xArticle, linkedInPost, youtube] = await Promise.all([
     generateRahulX(transcript, metadata),

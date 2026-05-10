@@ -11,6 +11,7 @@ import publishRouter from './routes/publish.js';
 import authRouter from './routes/auth.js';
 import promptsRouter from './routes/prompts.js';
 import editorialRouter from './routes/editorial.js';
+import introRouter from './routes/intro.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use('/', dashboardRouter);
 app.use(editorialRouter);
 app.use('/episodes', episodesRouter);
+app.use('/episodes', introRouter);
 app.use('/episodes', generateRouter);
 app.use('/episodes', reviewRouter);
 app.use('/episodes', publishRouter);
