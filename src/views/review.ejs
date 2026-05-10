@@ -96,7 +96,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/rahul-x" hx-target="#status-rahul-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'rahul-x', content: episode.rahul_x || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/rahul-x`, platform: 'rahul-x', content: episode.rahul_x || '' }) %>
   </div>
 </div>
 
@@ -117,7 +117,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/gautham-x" hx-target="#status-gautham-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'gautham-x', content: episode.gautham_x || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/gautham-x`, platform: 'gautham-x', content: episode.gautham_x || '' }) %>
   </div>
 </div>
 
@@ -134,7 +134,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/brand-x" hx-target="#status-brand-x" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'brand-x', content: episode.brand_x || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/brand-x`, platform: 'brand-x', content: episode.brand_x || '' }) %>
   </div>
 </div>
 
@@ -152,7 +152,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/x-article" hx-target="#status-x-article" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'x-article', content: episode.x_article || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/x-article`, platform: 'x-article', content: episode.x_article || '' }) %>
   </div>
 </div>
 
@@ -170,7 +170,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/linkedin" hx-target="#status-linkedin" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'linkedin', content: episode.linkedin_post || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/linkedin`, platform: 'linkedin', content: episode.linkedin_post || '' }) %>
   </div>
 </div>
 
@@ -187,7 +187,7 @@
         <button hx-post="/episodes/<%= episode.id %>/approve/youtube" hx-target="#status-youtube" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
       </div>
     </div>
-    <%- include('partials/output-panel', { epId: episode.id, platform: 'youtube', content: episode.youtube || '' }) %>
+    <%- include('partials/output-panel', { editUrl: `/episodes/${episode.id}/edit/youtube`, platform: 'youtube', content: episode.youtube || '' }) %>
   </div>
 </div>
 

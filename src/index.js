@@ -12,6 +12,7 @@ import authRouter from './routes/auth.js';
 import promptsRouter from './routes/prompts.js';
 import editorialRouter from './routes/editorial.js';
 import introRouter from './routes/intro.js';
+import recordingsRouter from './routes/recordings.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -26,6 +27,7 @@ app.use(express.json());
 
 // Routes
 app.use('/', dashboardRouter);
+app.use('/', recordingsRouter);
 app.use(editorialRouter);
 app.use('/episodes', episodesRouter);
 app.use('/episodes', introRouter);

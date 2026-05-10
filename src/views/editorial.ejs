@@ -21,6 +21,7 @@ function cutCount(flags, decisions) {
 const p1Cuts   = cutCount(pass1Flags, pass1Decisions);
 const p2Cuts   = cutCount(pass2Flags, pass2Decisions);
 const hasAudio = session.audio_file_path && session.audio_file_name;
+const recId    = recording.id;
 
 // Phase order
 const PHASES = ['idle','pass1_pending','pass1_applied','pass2_pending','pass2_applied'];
@@ -36,24 +37,24 @@ const phaseIdx = PHASES.indexOf(session.status);
 
 <!-- Back link -->
 <div style="margin-bottom:20px;">
-  <a href="/" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">
+  <a href="/recordings" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    All distribution copies
+    All Recordings
   </a>
 </div>
 
-<!-- Episode header + tab strip -->
+<!-- Recording header + stage tabs -->
 <div style="margin-bottom:24px;">
-  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= episode.title %></h1>
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 4px;"><%= recording.title %></h1>
   <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">
-    <% if (episode.guest_name) { %>with <%= episode.guest_name %> &middot; <% } %>
-    <%= new Date(episode.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) %>
+    <% if (recording.guest_name) { %>with <%= recording.guest_name %> &middot; <% } %>
+    <%= recording.created_at ? new Date(recording.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '' %>
   </p>
-  <!-- Tabs -->
-  <div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;">
-    <a href="/episodes/<%= episode.id %>/intro" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Intro Script</a>
-    <a href="/episodes/<%= episode.id %>/editorial" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;text-decoration:none;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;">Editorial</a>
-    <a href="/episodes/<%= episode.id %>/review" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Distribution Copy</a>
+  <!-- Stage tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;overflow-x:auto;">
+    <a href="/recordings/<%= recId %>" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Intro Script</a>
+    <a href="/recordings/<%= recId %>/editorial" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;text-decoration:none;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;white-space:nowrap;">Content Editor</a>
+    <a href="/recordings/<%= recId %>/distribution" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Distribution Copy</a>
   </div>
 </div>
 
@@ -86,10 +87,10 @@ const phaseIdx = PHASES.indexOf(session.status);
   <!-- Transcript upload (Pass 1) -->
   <div style="margin-bottom:20px;">
     <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Transcript file <span style="font-weight:400;color:#777587;">(.txt or .srt)</span></div>
-    <% if (episode.transcript_raw || episode.transcript_clean) { %>
-      <p style="font-size:12px;color:#065f46;margin:0 0 8px;">✓ Transcript loaded</p>
+    <% if (recording.raw_transcript) { %>
+      <p style="font-size:12px;color:#065f46;margin:0 0 8px;">✓ Transcript loaded from recording</p>
     <% } %>
-    <form action="/episodes/<%= episode.id %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <form action="/recordings/<%= recId %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input type="hidden" name="pass" value="1">
       <input type="file" name="transcript" accept=".txt,.srt" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
       <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
@@ -98,8 +99,8 @@ const phaseIdx = PHASES.indexOf(session.status);
 
   <!-- Audio upload (optional) -->
   <div style="margin-bottom:24px;">
-    <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Audio file <span style="font-weight:400;color:#777587;">(optional — for playback during Pass 2)</span></div>
-    <form action="/episodes/<%= episode.id %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Audio file <span style="font-weight:400;color:#777587;">(optional — for Pass 2 playback)</span></div>
+    <form action="/recordings/<%= recId %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
       <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
     </form>
@@ -111,7 +112,7 @@ const phaseIdx = PHASES.indexOf(session.status);
   <div style="border-top:1px solid #ece1cd;padding-top:20px;">
     <div style="font-size:12px;color:#777587;margin-bottom:12px;">Show criteria: <a href="/settings/editorial" style="color:#ba4b1d;text-decoration:none;" target="_blank">edit ↗</a></div>
     <pre style="font-family:'Inter',sans-serif;font-size:12px;color:#464555;background:#fcf2eb;border:1px solid #fde8d6;border-radius:6px;padding:12px;white-space:pre-wrap;margin:0 0 20px;"><%= showCriteria %></pre>
-    <form action="/episodes/<%= episode.id %>/editorial/run-pass/1" method="POST">
+    <form action="/recordings/<%= recId %>/editorial/run-pass/1" method="POST">
       <button type="submit" onclick="document.getElementById('loading-overlay').style.display='flex';" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
         Run Pass 1 — Hard Cuts
@@ -131,7 +132,7 @@ const phaseIdx = PHASES.indexOf(session.status);
     <h2 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#1f1b17;margin:0 0 4px;">Pass 1 — Hard Cuts</h2>
     <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;"><%= pass1Flags.length %> flag<%= pass1Flags.length !== 1 ? 's' : '' %> · <span id="cut-counter-1"><%= p1Cuts %></span> queued to cut · Review and mark "Keep" for anything you want to preserve</p>
   </div>
-  <form action="/episodes/<%= episode.id %>/editorial/apply/1" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/apply/1" method="POST">
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
       Apply Pass 1 Cuts →
     </button>
@@ -149,29 +150,25 @@ const phaseIdx = PHASES.indexOf(session.status);
   const dec = flagDecision(pass1Decisions, flag.id);
 %>
   <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:18px 20px;">
-    <!-- Flag header -->
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
       <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:#777587;"><%= flag.start_time %> – <%= flag.end_time %></span>
       <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#fde8d6;color:#8c3213;text-transform:uppercase;letter-spacing:0.05em;"><%= CAT_LABEL[flag.category] || flag.category %></span>
       <span style="font-size:12px;font-weight:500;color:#464555;"><%= flag.speaker %></span>
     </div>
-    <!-- Flagged text -->
     <p style="font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;margin:0 0 8px;line-height:1.5;background:#fcf2eb;padding:8px 12px;border-radius:5px;border-left:3px solid #fde8d6;">
       <%= flag.text %><% if (flag.text && flag.text.length >= 195) { %>…<% } %>
     </p>
-    <!-- Reason -->
     <p style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;margin:0 0 12px;"><%= flag.reason %></p>
-    <!-- Decision -->
     <% if (dec === 'pending') { %>
       <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <button
-          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-post="/recordings/${recId}/editorial/decide"
           hx-vals='{"flagId":"${flag.id}","action":"accept","pass":"1"}'
           hx-target="#decision-${flag.id}"
           hx-swap="outerHTML"
           style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:#ba1a1a;color:#fff;border:none;cursor:pointer;">Cut</button>
         <button
-          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-post="/recordings/${recId}/editorial/decide"
           hx-vals='{"flagId":"${flag.id}","action":"reject","pass":"1"}'
           hx-target="#decision-${flag.id}"
           hx-swap="outerHTML"
@@ -184,7 +181,7 @@ const phaseIdx = PHASES.indexOf(session.status);
       %>
       <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;color:${bc.color};background:${bc.bg};">${bc.label}</span>
-        <button hx-post="/episodes/${episode.id}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"1"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
+        <button hx-post="/recordings/${recId}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"1"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
       </div>` %>
     <% } %>
   </div>
@@ -192,7 +189,7 @@ const phaseIdx = PHASES.indexOf(session.status);
 </div>
 
 <div style="display:flex;justify-content:flex-end;">
-  <form action="/episodes/<%= episode.id %>/editorial/apply/1" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/apply/1" method="POST">
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
       Apply Pass 1 Cuts →
     </button>
@@ -213,15 +210,13 @@ const phaseIdx = PHASES.indexOf(session.status);
   </div>
 </div>
 
-<!-- Audio upload for Pass 2 -->
 <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:24px;margin-bottom:20px;">
   <h3 style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0 0 12px;">Pass 2 — Soft Cuts</h3>
-  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">Analyses v1 transcript for redundancy, tangents, wandering answers, and misplaced content. Judgment calls with confidence levels.</p>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;">Analyses v1 transcript for redundancy, tangents, wandering answers, and misplaced content.</p>
 
-  <!-- Transcript upload (override v1 for Pass 2) -->
   <div style="margin-bottom:20px;">
     <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:4px;">Transcript for Pass 2 <span style="font-weight:400;color:#777587;">(optional — upload to override the auto-cut v1)</span></div>
-    <form action="/episodes/<%= episode.id %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <form action="/recordings/<%= recId %>/editorial/upload-transcript" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <input type="hidden" name="pass" value="2">
       <input type="file" name="transcript" accept=".txt,.srt" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
       <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
@@ -231,7 +226,7 @@ const phaseIdx = PHASES.indexOf(session.status);
   <% if (!hasAudio) { %>
     <div style="margin-bottom:20px;">
       <div style="font-size:13px;font-weight:600;color:#464555;margin-bottom:8px;">Audio file <span style="font-weight:400;color:#777587;">(enables inline playback during review)</span></div>
-      <form action="/episodes/<%= episode.id %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <form action="/recordings/<%= recId %>/editorial/upload-audio" method="POST" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <input type="file" name="audio" accept=".mp3,.wav,.m4a,.aac" style="font-size:13px;font-family:'Inter',sans-serif;color:#464555;">
         <button type="submit" style="background:none;border:1px solid #c7c4d8;color:#464555;padding:6px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Upload</button>
       </form>
@@ -240,7 +235,7 @@ const phaseIdx = PHASES.indexOf(session.status);
     <p style="font-size:13px;color:#065f46;margin:0 0 20px;">✓ Audio: <%= session.audio_file_name %></p>
   <% } %>
 
-  <form action="/episodes/<%= episode.id %>/editorial/run-pass/2" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/run-pass/2" method="POST">
     <button type="submit" onclick="document.getElementById('loading-overlay').style.display='flex';" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
       Run Pass 2 — Soft Cuts
@@ -248,7 +243,6 @@ const phaseIdx = PHASES.indexOf(session.status);
   </form>
 </div>
 
-<!-- v1 transcript (collapsed) -->
 <details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;">
   <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -265,7 +259,7 @@ const phaseIdx = PHASES.indexOf(session.status);
 
 <% if (hasAudio) { %>
 <audio id="ep-audio" preload="none" style="display:none;">
-  <source src="/episodes/<%= episode.id %>/editorial/audio">
+  <source src="/recordings/<%= recId %>/editorial/audio">
 </audio>
 <% } %>
 
@@ -274,14 +268,13 @@ const phaseIdx = PHASES.indexOf(session.status);
     <h2 style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#1f1b17;margin:0 0 4px;">Pass 2 — Soft Cuts</h2>
     <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;"><%= pass2Flags.length %> flag<%= pass2Flags.length !== 1 ? 's' : '' %> · <span id="cut-counter-2"><%= p2Cuts %></span> queued to cut · Review each flag and use "Keep" or "Relocate" as needed</p>
   </div>
-  <form action="/episodes/<%= episode.id %>/editorial/apply/2" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/apply/2" method="POST">
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
       Apply Pass 2 Cuts →
     </button>
   </form>
 </div>
 
-<!-- Pass 1 summary (collapsed) -->
 <details style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:0;margin-bottom:20px;">
   <summary style="padding:12px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#065f46;cursor:pointer;list-style:none;">
     Pass 1 complete — <%= p1Cuts %> cut<%= p1Cuts !== 1 ? 's' : '' %> applied
@@ -306,50 +299,45 @@ const phaseIdx = PHASES.indexOf(session.status);
   const confBg    = CONF_BG[flag.confidence]    || '#f3f4f6';
 %>
   <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:18px 20px;">
-    <!-- Flag header -->
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
       <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:#777587;"><%= flag.start_time %> – <%= flag.end_time %></span>
       <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:#fef3c7;color:#92400e;text-transform:uppercase;letter-spacing:0.05em;"><%= CAT_LABEL[flag.category] || flag.category %></span>
       <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:<%= confBg %>;color:<%= confColor %>;"><%= flag.confidence %></span>
       <span style="font-size:12px;font-weight:500;color:#464555;"><%= flag.speaker %></span>
     </div>
-    <!-- Flagged text -->
     <p style="font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;margin:0 0 8px;line-height:1.5;background:#fcf2eb;padding:8px 12px;border-radius:5px;border-left:3px solid #fde8d6;">
       <%= flag.text %><% if (flag.text && flag.text.length >= 195) { %>…<% } %>
     </p>
-    <!-- Reason + audio signal -->
     <p style="font-family:'Inter',sans-serif;font-size:12px;color:#777587;margin:0 0 4px;"><%= flag.reason %></p>
     <% if (flag.audio_signal) { %>
       <p style="font-family:'Inter',sans-serif;font-size:12px;color:#92400e;margin:0 0 12px;">🎧 <%= flag.audio_signal %></p>
     <% } else { %>
       <div style="margin-bottom:12px;"></div>
     <% } %>
-    <!-- Audio play button -->
     <% if (hasAudio) { %>
       <button onclick="playSegment(<%= flag.start_secs %>, <%= flag.end_secs %>)" style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid #c7c4d8;color:#464555;padding:4px 12px;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;margin-bottom:12px;">
         <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
         Play segment
       </button>
     <% } %>
-    <!-- Decision -->
     <% if (dec === 'pending') { %>
       <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <input id="reason-${flag.id}" name="reason" type="text" placeholder="Reason to keep (optional — adds to keep list)" style="flex:1;padding:5px 10px;border:1px solid #c7c4d8;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;color:#1f1b17;background:#fff;min-width:200px;">
         <button
-          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-post="/recordings/${recId}/editorial/decide"
           hx-vals='{"flagId":"${flag.id}","action":"accept","pass":"2"}'
           hx-target="#decision-${flag.id}"
           hx-swap="outerHTML"
           style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:#ba1a1a;color:#fff;border:none;cursor:pointer;">Cut</button>
         <button
-          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-post="/recordings/${recId}/editorial/decide"
           hx-vals='{"flagId":"${flag.id}","action":"reject","pass":"2"}'
           hx-include="#reason-${flag.id}"
           hx-target="#decision-${flag.id}"
           hx-swap="outerHTML"
           style="font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;background:none;color:#464555;border:1px solid #c7c4d8;cursor:pointer;">Keep</button>
         <button
-          hx-post="/episodes/${episode.id}/editorial/decide"
+          hx-post="/recordings/${recId}/editorial/decide"
           hx-vals='{"flagId":"${flag.id}","action":"relocate","pass":"2"}'
           hx-target="#decision-${flag.id}"
           hx-swap="outerHTML"
@@ -366,7 +354,7 @@ const phaseIdx = PHASES.indexOf(session.status);
       %>
       <%- `<div id="decision-${flag.id}" style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;color:${bc2.color};background:${bc2.bg};">${bc2.label}</span>
-        <button hx-post="/episodes/${episode.id}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"2"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
+        <button hx-post="/recordings/${recId}/editorial/undecide" hx-vals='{"flagId":"${flag.id}","pass":"2"}' hx-target="#decision-${flag.id}" hx-swap="outerHTML" style="font-size:12px;color:#777587;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;">Undo</button>
       </div>` %>
     <% } %>
   </div>
@@ -374,7 +362,7 @@ const phaseIdx = PHASES.indexOf(session.status);
 </div>
 
 <div style="display:flex;justify-content:flex-end;">
-  <form action="/episodes/<%= episode.id %>/editorial/apply/2" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/apply/2" method="POST">
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
       Apply Pass 2 Cuts →
     </button>
@@ -387,21 +375,19 @@ const phaseIdx = PHASES.indexOf(session.status);
 <!-- ══════════════════════════════════════════ PHASE: PASS 2 APPLIED ══════ -->
 <% if (session.status === 'pass2_applied') { %>
 
-<!-- Send to copywriter CTA -->
 <div style="background:#fff;border:2px solid #ba4b1d;border-radius:8px;padding:28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
   <div>
     <h2 style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#1f1b17;margin:0 0 6px;">Editorial complete</h2>
     <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">Pass 1: <%= p1Cuts %> cut<%= p1Cuts!==1?'s':'' %> &nbsp;·&nbsp; Pass 2: <%= p2Cuts %> cut<%= p2Cuts!==1?'s':'' %> &nbsp;·&nbsp; v2 transcript ready</p>
   </div>
-  <form action="/episodes/<%= episode.id %>/editorial/send-to-copywriter" method="POST">
+  <form action="/recordings/<%= recId %>/editorial/send-to-copywriter" method="POST">
     <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;">
       <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Send to Copywriter
+      Send to Distribution Copy
     </button>
   </form>
 </div>
 
-<!-- Suggested edits markdown -->
 <details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;margin-bottom:16px;" open>
   <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;">
     <span style="display:flex;align-items:center;gap:8px;">
@@ -413,7 +399,6 @@ const phaseIdx = PHASES.indexOf(session.status);
   <pre id="suggested-edits-md" style="margin:0;padding:0 20px 20px;font-family:'Space Grotesk',monospace;font-size:12px;color:#464555;white-space:pre-wrap;line-height:1.7;max-height:500px;overflow-y:auto;border-top:1px solid #ece1cd;"><%= suggestedEditsMarkdown %></pre>
 </details>
 
-<!-- v2 transcript (collapsed) -->
 <details style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:0;margin-bottom:32px;">
   <summary style="padding:16px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -430,9 +415,8 @@ const phaseIdx = PHASES.indexOf(session.status);
   </div>
 
   <% if (tuningStatus === 'none') { %>
-    <!-- Feedback form -->
     <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:24px;max-width:680px;">
-      <form action="/episodes/<%= episode.id %>/editorial/submit-feedback" method="POST">
+      <form action="/recordings/<%= recId %>/editorial/submit-feedback" method="POST">
         <textarea name="feedback" rows="5" placeholder="e.g. Claude flagged the banter about shipping as off-topic but that's core to the show. It also missed the 3-minute sponsor tangent in act 2." style="width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:#1f1b17;background:#fff;box-sizing:border-box;resize:vertical;line-height:1.6;" required></textarea>
         <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
           <button type="submit" onclick="document.getElementById('loading-overlay').style.display='flex';" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
@@ -445,7 +429,6 @@ const phaseIdx = PHASES.indexOf(session.status);
     </div>
 
   <% } else if (tuningStatus === 'pending') { %>
-    <!-- Proposals review -->
     <div style="background:#fff;border:1px solid #c7c4d8;border-radius:8px;padding:24px;max-width:900px;">
 
       <% if (tuningProposals.summary) { %>
@@ -457,7 +440,7 @@ const phaseIdx = PHASES.indexOf(session.status);
 
       <p style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;margin:0 0 4px;"><strong style="color:#464555;">Your feedback:</strong> <%= tuningProposals.feedback %></p>
 
-      <form action="/episodes/<%= episode.id %>/editorial/apply-tuning" method="POST" style="margin-top:20px;">
+      <form action="/recordings/<%= recId %>/editorial/apply-tuning" method="POST" style="margin-top:20px;">
 
         <% const hasAnyProposal = tuningProposals.pass1_prompt || tuningProposals.pass2_prompt || tuningProposals.show_criteria || tuningProposals.keep_list_additions?.length; %>
 
@@ -541,11 +524,11 @@ const phaseIdx = PHASES.indexOf(session.status);
             <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:#065f46;color:#fff;border:none;padding:10px 22px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
               Apply selected changes
             </button>
-            <a href="/episodes/<%= episode.id %>/editorial/skip-tuning" style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Skip</a>
+            <a href="/recordings/<%= recId %>/editorial/skip-tuning" style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Skip</a>
           </div>
         <% } else { %>
           <div style="margin-top:8px;">
-            <a href="/episodes/<%= episode.id %>/editorial/skip-tuning" style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;text-decoration:none;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Dismiss</a>
+            <a href="/recordings/<%= recId %>/editorial/skip-tuning" style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;text-decoration:none;">Dismiss</a>
           </div>
         <% } %>
 
@@ -555,7 +538,7 @@ const phaseIdx = PHASES.indexOf(session.status);
   <% } else if (tuningStatus === 'applied') { %>
     <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;max-width:480px;">
       <svg width="16" height="16" fill="none" stroke="#065f46" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-      <span style="font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#065f46;">Prompt improvements applied — they'll take effect on the next episode.</span>
+      <span style="font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#065f46;">Prompt improvements applied — they'll take effect on the next recording.</span>
     </div>
   <% } %>
 
