@@ -114,6 +114,68 @@ for (const [col, type] of [['tuning_proposals', 'TEXT'], ['tuning_status', "TEXT
 // Add intro_script column
 try { db.exec(`ALTER TABLE episodes ADD COLUMN intro_script TEXT`); } catch { /* already exists */ }
 
+// ─── New architecture: recordings as primary entity ───────────────────────────
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS recordings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    guest_name TEXT,
+    recording_date TEXT,
+    raw_transcript TEXT,
+    intro_script TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS prompt_versions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prompt_name TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version_number INTEGER NOT NULL DEFAULT 1,
+    parent_id INTEGER,
+    note TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS content_feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recording_id INTEGER,
+    episode_id INTEGER,
+    content_type TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS prompt_suggestions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prompt_name TEXT NOT NULL,
+    suggested_content TEXT NOT NULL,
+    reasoning TEXT,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now')),
+    resolved_at TEXT
+  );
+`);
+
+// Add recording_id to episodes and editorial_sessions
+try { db.exec(`ALTER TABLE episodes ADD COLUMN recording_id INTEGER`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE editorial_sessions ADD COLUMN recording_id INTEGER`); } catch { /* already exists */ }
+
+// Migrate existing episodes → create a recording for each orphaned episode
+{
+  const orphaned = db.prepare(`SELECT * FROM episodes WHERE recording_id IS NULL`).all();
+  for (const ep of orphaned) {
+    const res = db.prepare(`
+      INSERT INTO recordings (title, guest_name, recording_date, raw_transcript, intro_script, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(ep.title, ep.guest_name, ep.recording_date, ep.transcript_raw, ep.intro_script, ep.created_at, ep.updated_at);
+    const recId = res.lastInsertRowid;
+    db.prepare(`UPDATE episodes SET recording_id = ? WHERE id = ?`).run(recId, ep.id);
+    db.prepare(`UPDATE editorial_sessions SET recording_id = ? WHERE episode_id = ?`).run(recId, ep.id);
+  }
+}
+
 // Add new columns to existing DBs (ALTER TABLE ignores duplicates via try/catch)
 const newCols = [
   ['rahul_x', 'TEXT'],
