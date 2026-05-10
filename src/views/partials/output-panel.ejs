@@ -13,7 +13,7 @@
   <!-- Edit -->
   <div style="padding:24px;display:flex;flex-direction:column;gap:12px;">
     <p style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;margin:0;">Edit</p>
-    <form hx-post="/episodes/<%= epId %>/edit/<%= platform %>" hx-target="#status-<%= platform %>" hx-swap="innerHTML" style="flex:1;display:flex;flex-direction:column;gap:10px;">
+    <form hx-post="<%= editUrl %>" hx-target="#status-<%= platform %>" hx-swap="innerHTML" style="flex:1;display:flex;flex-direction:column;gap:10px;">
       <textarea name="content" rows="22" style="flex:1;width:100%;padding:12px;border:1px solid #c7c4d8;border-radius:6px;font-family:'Space Grotesk',monospace;font-size:13px;line-height:1.7;color:#1f1b17;resize:vertical;box-sizing:border-box;"><%= content %></textarea>
       <button type="submit" style="align-self:flex-end;background:#ba4b1d;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Save Changes</button>
     </form>
