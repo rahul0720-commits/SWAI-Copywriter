@@ -1,11 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
 import db from '../db.js';
-import {
-  generateIntroScript, generateAllContent,
-  generateRahulX, generateGauthamX, generateBrandX,
-  generateXArticle, generateLinkedIn, generateYouTube,
-} from '../services/claude.js';
+import { generateIntroScript } from '../services/claude.js';
+import { getOutput, getOutputs, generateOne, generateSection } from '../services/outputs.js';
 import { parseTranscript } from '../services/transcript.js';
 import { isConnected as twitterConnected } from '../services/twitter.js';
 import { isConnected as linkedinConnected } from '../services/linkedin.js';
@@ -16,24 +13,6 @@ const router = Router();
 const APPROVED_BADGE = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#065f46;background:#d1fae5;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#059669;flex-shrink:0;"></span>Approved</span>`;
 const DRAFT_BADGE    = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#777587;background:#f0e6e0;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#c7c4d8;flex-shrink:0;"></span>Draft</span>`;
 const SAVED_BADGE    = `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#8c3213;background:#fde8d6;padding:4px 10px;border-radius:99px;"><span style="width:7px;height:7px;border-radius:50%;background:#ba4b1d;flex-shrink:0;"></span>Saved — re-approve</span>`;
-
-const COLUMN_MAP = {
-  'rahul-x':   { col: 'rahul_x',      approved: 'rahul_x_approved' },
-  'gautham-x': { col: 'gautham_x',    approved: 'gautham_x_approved' },
-  'brand-x':   { col: 'brand_x',      approved: 'brand_x_approved' },
-  'x-article': { col: 'x_article',    approved: 'x_article_approved' },
-  'linkedin':  { col: 'linkedin_post', approved: 'linkedin_approved' },
-  'youtube':   { col: 'youtube',       approved: 'youtube_approved' },
-};
-
-const PLATFORM_MAP = {
-  'rahul-x':   { fn: (t, m, b) => generateRahulX(t, m),               col: 'rahul_x' },
-  'gautham-x': { fn: (t, m, b) => generateGauthamX(t, m, b.mode),     col: 'gautham_x' },
-  'brand-x':   { fn: (t, m, b) => generateBrandX(t, m),               col: 'brand_x' },
-  'x-article': { fn: (t, m, b) => generateXArticle(t, m, b.hostName), col: 'x_article' },
-  'linkedin':  { fn: (t, m, b) => generateLinkedIn(t, m, b.hostName), col: 'linkedin_post' },
-  'youtube':   { fn: (t, m, b) => generateYouTube(t, m),              col: 'youtube' },
-};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -196,10 +175,12 @@ router.get('/recordings/:id/distribution', (req, res) => {
     recording,
     episode,
     session,
+    outputs: getOutputs('distribution'),
     twitterConnected: twitterConnected(),
     linkedinConnected: linkedinConnected(),
     approvedBadge: APPROVED_BADGE,
     draftBadge: DRAFT_BADGE,
+    savedBadge: SAVED_BADGE,
   });
 });
 
@@ -241,45 +222,53 @@ router.post('/recordings/:id/distribution/generate', async (req, res, next) => {
     if (!episode?.transcript_clean) return res.status(400).send('No final transcript — upload one first');
 
     const metadata = { title: episode.title, guestName: episode.guest_name };
-    const hostName = req.body.host_name || 'Rahul';
-    const content = await generateAllContent(episode.transcript_clean, metadata, hostName);
+    const body = req.body || {};
+    const extras = { mode: body.mode || 'full', hostName: body.host_name || 'Rahul' };
+    const results = await generateSection('distribution', episode.transcript_clean, metadata, extras);
 
-    db.prepare(`
-      UPDATE episodes SET rahul_x=?, gautham_x=?, brand_x=?, x_article=?, linkedin_post=?, youtube=?, updated_at=datetime('now') WHERE id=?
-    `).run(content.rahulX, content.gauthamX, content.brandX, content.xArticle, content.linkedInPost, content.youtube, episode.id);
+    const setClause = results.map(r => `${r.output.dbColumn} = ?`).join(', ');
+    const values = results.map(r => r.content);
+    db.prepare(`UPDATE episodes SET ${setClause}, updated_at = datetime('now') WHERE id = ?`)
+      .run(...values, episode.id);
 
     res.redirect(`/recordings/${req.params.id}/distribution`);
   } catch (err) { next(err); }
 });
 
-// ─── POST /recordings/:id/distribution/regenerate/:platform ──────────────────
+// ─── POST /recordings/:id/distribution/generate/:platform (one output) ───────
+// Same handler powers first-time "Generate" and "Regenerate" for a single output.
 
-router.post('/recordings/:id/distribution/regenerate/:platform', async (req, res, next) => {
+async function generateSingleOutput(req, res, next) {
   try {
     const episode = getEpisode(req.params.id);
     if (!episode?.transcript_clean) return res.status(400).send('No transcript available');
 
-    const entry = PLATFORM_MAP[req.params.platform];
-    if (!entry) return res.status(400).send('Invalid platform');
+    const output = getOutput(req.params.platform);
+    if (!output) return res.status(400).send('Invalid output');
 
     const metadata = { title: episode.title, guestName: episode.guest_name };
-    const extras = { mode: req.body.mode || 'full', hostName: req.body.host_name || 'Rahul' };
-    const content = await entry.fn(episode.transcript_clean, metadata, extras);
-    db.prepare(`UPDATE episodes SET ${entry.col} = ?, updated_at = datetime('now') WHERE id = ?`).run(content, episode.id);
+    const body = req.body || {};
+    const extras = { mode: body.mode || 'full', hostName: body.host_name || 'Rahul' };
+    const content = await generateOne(output, episode.transcript_clean, metadata, extras);
+    db.prepare(`UPDATE episodes SET ${output.dbColumn} = ?, updated_at = datetime('now') WHERE id = ?`)
+      .run(content, episode.id);
 
     res.redirect(`/recordings/${req.params.id}/distribution`);
   } catch (err) { next(err); }
-});
+}
+
+router.post('/recordings/:id/distribution/generate/:platform', generateSingleOutput);
+router.post('/recordings/:id/distribution/regenerate/:platform', generateSingleOutput);
 
 // ─── POST /recordings/:id/distribution/approve/:platform (HTMX) ──────────────
 
 router.post('/recordings/:id/distribution/approve/:platform', (req, res) => {
-  const entry = COLUMN_MAP[req.params.platform];
-  if (!entry) return res.status(400).send('Invalid platform');
+  const output = getOutput(req.params.platform);
+  if (!output) return res.status(400).send('Invalid platform');
   const episode = getEpisode(req.params.id);
   if (!episode) return res.status(404).send('No distribution copy');
 
-  db.prepare(`UPDATE episodes SET ${entry.approved} = 1, updated_at = datetime('now') WHERE id = ?`).run(episode.id);
+  db.prepare(`UPDATE episodes SET ${output.approvedColumn} = 1, updated_at = datetime('now') WHERE id = ?`).run(episode.id);
 
   if (req.headers['hx-request']) return res.send(APPROVED_BADGE);
   res.redirect(`/recordings/${req.params.id}/distribution`);
@@ -288,12 +277,12 @@ router.post('/recordings/:id/distribution/approve/:platform', (req, res) => {
 // ─── POST /recordings/:id/distribution/edit/:platform (HTMX) ─────────────────
 
 router.post('/recordings/:id/distribution/edit/:platform', (req, res) => {
-  const entry = COLUMN_MAP[req.params.platform];
-  if (!entry) return res.status(400).send('Invalid platform');
+  const output = getOutput(req.params.platform);
+  if (!output) return res.status(400).send('Invalid platform');
   const episode = getEpisode(req.params.id);
   if (!episode) return res.status(404).send('No distribution copy');
 
-  db.prepare(`UPDATE episodes SET ${entry.col} = ?, ${entry.approved} = 0, updated_at = datetime('now') WHERE id = ?`)
+  db.prepare(`UPDATE episodes SET ${output.dbColumn} = ?, ${output.approvedColumn} = 0, updated_at = datetime('now') WHERE id = ?`)
     .run(req.body.content, episode.id);
 
   if (req.headers['hx-request']) return res.send(SAVED_BADGE);

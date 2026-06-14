@@ -184,12 +184,16 @@ const newCols = [
   ['x_article', 'TEXT'],
   ['linkedin_post', 'TEXT'],
   ['youtube', 'TEXT'],
+  ['youtube_description', 'TEXT'],
+  ['substack_show_notes', 'TEXT'],
   ['rahul_x_approved', 'INTEGER DEFAULT 0'],
   ['gautham_x_approved', 'INTEGER DEFAULT 0'],
   ['brand_x_approved', 'INTEGER DEFAULT 0'],
   ['x_article_approved', 'INTEGER DEFAULT 0'],
   ['linkedin_approved', 'INTEGER DEFAULT 0'],
   ['youtube_approved', 'INTEGER DEFAULT 0'],
+  ['youtube_description_approved', 'INTEGER DEFAULT 0'],
+  ['substack_show_notes_approved', 'INTEGER DEFAULT 0'],
 ];
 for (const [col, type] of newCols) {
   try { db.exec(`ALTER TABLE episodes ADD COLUMN ${col} ${type}`); } catch { /* already exists */ }
