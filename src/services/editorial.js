@@ -117,6 +117,41 @@ export function generateSuggestedEditsMarkdown(episode, pass1Flags, pass2Flags, 
   return lines.join('\n');
 }
 
+// Single content-generation prompt improver, driven by manual feedback on the
+// outputs that prompt produced. Analogous to generateTuningProposals but for one
+// standalone prompt (Rahul X, YouTube, Substack show notes, ...).
+export async function improveContentPrompt(label, currentPrompt, feedbackText) {
+  const system = `You improve a single AI prompt used to generate "${label}" content for a podcast repurposing tool.
+You will be given the current prompt and feedback from a human editor about the outputs it produced.
+Propose minimal, targeted edits that fix the specific issues raised. Do not rewrite parts that aren't called out.
+Keep the same structure and any template tokens (e.g. {transcript}, {host_name}, {mode}) intact.
+Return ONLY a valid JSON object, no prose outside it, in this exact shape:
+{
+  "proposed_prompt": "the full updated prompt text, or null if no change is warranted",
+  "summary": "one sentence describing what you changed and why"
+}`;
+
+  const userMsg = `CURRENT PROMPT:
+${currentPrompt}
+
+EDITOR FEEDBACK ON RECENT OUTPUTS:
+${feedbackText}`;
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8192,
+    system,
+    messages: [{ role: 'user', content: userMsg }],
+  });
+
+  const result = extractObject(response.content[0].text);
+  if (!result) return null;
+  return {
+    proposed: result.proposed_prompt || null,
+    summary: result.summary || '',
+  };
+}
+
 export async function generateTuningProposals(feedback, showCriteria) {
   const pass1Prompt = getPrompt('editorial-pass1', 'editorial-pass1.txt');
   const pass2Prompt = getPrompt('editorial-pass2', 'editorial-pass2.txt');

@@ -3,6 +3,7 @@ import multer from 'multer';
 import db from '../db.js';
 import { generateIntroScript } from '../services/claude.js';
 import { getOutput, getOutputs, generateOne, generateSection } from '../services/outputs.js';
+import { currentPromptVersion } from '../services/promptStore.js';
 import { parseTranscript } from '../services/transcript.js';
 import { isConnected as twitterConnected } from '../services/twitter.js';
 import { isConnected as linkedinConnected } from '../services/linkedin.js';
@@ -292,11 +293,16 @@ router.post('/recordings/:id/distribution/edit/:platform', (req, res) => {
 // ─── POST /recordings/:id/distribution/feedback (HTMX) ───────────────────────
 
 router.post('/recordings/:id/distribution/feedback', (req, res) => {
-  const { content_type, rating } = req.body;
+  const body = req.body || {};
+  const { content_type, rating } = body;
+  const note = (body.note || '').trim() || null;
   const episode = getEpisode(req.params.id);
-  db.prepare(`INSERT INTO content_feedback (recording_id, episode_id, content_type, rating) VALUES (?, ?, ?, ?)`)
-    .run(req.params.id, episode?.id || null, content_type, parseInt(rating));
-  if (req.headers['hx-request']) return res.send('');
+  const promptVersion = currentPromptVersion(content_type);
+  db.prepare(`INSERT INTO content_feedback (recording_id, episode_id, content_type, rating, note, prompt_version) VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(req.params.id, episode?.id || null, content_type, parseInt(rating), note, promptVersion);
+  if (req.headers['hx-request']) {
+    return res.send(`<span style="font-size:12px;color:#065f46;font-family:'Inter',sans-serif;">✓ Thanks — feedback saved</span>`);
+  }
   res.redirect(`/recordings/${req.params.id}/distribution`);
 });
 

@@ -1,5 +1,12 @@
 <%- include('partials/head', { title: 'Prompts' }) %>
 
+<!-- Loading overlay (prompt tuning) -->
+<div id="loading-overlay" class="loading-overlay" style="display:none;">
+  <div class="spinner"></div>
+  <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">Improving prompt…</p>
+  <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0;">Claude is proposing edits from your feedback. ~15 seconds.</p>
+</div>
+
 <div style="margin-bottom:32px;">
   <h1 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0 0 6px;">Prompt Editor</h1>
   <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0;">Edit the AI prompts Claude uses to generate content. Changes take effect immediately for new generations.</p>
@@ -15,6 +22,15 @@
   <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#dbeafe;border:1px solid #bfdbfe;border-radius:6px;margin-bottom:20px;">
     <svg width="16" height="16" fill="none" stroke="#2563eb" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1018 0 9 9 0 00-18 0M12 8v4l3 3"/></svg>
     <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1e40af;">Prompt reset to default.</span>
+  </div>
+<% } %>
+<% if (tuned && nochange) { %>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f0e6e0;border:1px solid #e2d8d2;border-radius:6px;margin-bottom:20px;">
+    <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#464555;">No change suggested — Claude thinks the current prompt already handles the feedback (or there isn't enough feedback yet).</span>
+  </div>
+<% } else if (tuned) { %>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;margin-bottom:20px;">
+    <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#92400e;">Proposed an improvement below — review and apply.</span>
   </div>
 <% } %>
 
@@ -52,6 +68,63 @@
               Reset to default
             </button>
           </form>
+        <% } %>
+      </div>
+
+      <!-- Feedback & tuning -->
+      <div style="padding:16px 24px;border-bottom:1px solid #f0e6e0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.06em;text-transform:uppercase;">Feedback</span>
+            <% if (p.feedback.total === 0) { %>
+              <span style="font-size:13px;color:#777587;font-family:'Inter',sans-serif;">None yet — rate this output on the Distribution page.</span>
+            <% } else { %>
+              <span style="font-size:13px;color:#464555;font-family:'Inter',sans-serif;">👍 <%= p.feedback.up %> &middot; 👎 <%= p.feedback.down %> &middot; <%= p.feedback.notes %> note<%= p.feedback.notes === 1 ? '' : 's' %></span>
+            <% } %>
+            <% if (p.version > 0) { %><span style="font-size:11px;color:#777587;font-family:'Inter',sans-serif;">&middot; v<%= p.version %></span><% } %>
+          </div>
+          <% if (p.feedback.total > 0 && !p.suggestion) { %>
+            <form method="POST" action="/settings/prompts/<%= p.name %>/tune" onsubmit="document.getElementById('loading-overlay').style.display='flex';">
+              <button type="submit" style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid #ba4b1d;color:#ba4b1d;padding:7px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Improve from feedback
+              </button>
+            </form>
+          <% } %>
+        </div>
+
+        <% if (p.feedback.recentNotes && p.feedback.recentNotes.length) { %>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">
+            <% p.feedback.recentNotes.slice(0, 5).forEach(function(n) { %>
+              <div style="font-size:12px;color:#464555;font-family:'Inter',sans-serif;"><%= n.rating > 0 ? '👍' : '👎' %> <%= n.note %></div>
+            <% }); %>
+          </div>
+        <% } %>
+
+        <% if (p.suggestion) { %>
+          <div style="margin-top:14px;border:1px solid #fde68a;background:#fffbeb;border-radius:6px;padding:14px;">
+            <% if (p.suggestion.reasoning) { %>
+              <div style="font-size:13px;color:#92400e;font-family:'Inter',sans-serif;margin:0 0 10px;"><strong>Claude's take:</strong> <%= p.suggestion.reasoning %></div>
+            <% } %>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-size:11px;font-weight:600;color:#777587;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Current</div>
+                <pre style="font-family:'Space Grotesk',monospace;font-size:11px;color:#464555;background:#fcf2eb;border:1px solid #fde8d6;border-radius:6px;padding:12px;white-space:pre-wrap;max-height:240px;overflow-y:auto;margin:0;"><%= p.content %></pre>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Proposed</div>
+                <pre style="font-family:'Space Grotesk',monospace;font-size:11px;color:#1f1b17;background:#d1fae5;border:1px solid #a7f3d0;border-radius:6px;padding:12px;white-space:pre-wrap;max-height:240px;overflow-y:auto;margin:0;"><%= p.suggestion.suggested_content %></pre>
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+              <form method="POST" action="/settings/prompts/<%= p.name %>/apply-suggestion">
+                <button type="submit" style="background:#065f46;color:#fff;border:none;padding:9px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Apply improvement</button>
+              </form>
+              <form method="POST" action="/settings/prompts/<%= p.name %>/dismiss-suggestion">
+                <button type="submit" style="background:none;border:none;color:#777587;padding:9px 6px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Dismiss</button>
+              </form>
+            </div>
+          </div>
         <% } %>
       </div>
 
@@ -122,6 +195,7 @@ document.querySelectorAll('[id^="textarea-"]').forEach(ta => {
 
 <% if (saved) { %>switchTab('<%= saved %>');<% } %>
 <% if (reset) { %>switchTab('<%= reset %>');<% } %>
+<% if (tuned) { %>switchTab('<%= tuned %>');<% } %>
 </script>
 
 <%- include('partials/foot') %>

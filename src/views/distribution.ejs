@@ -119,14 +119,20 @@
               <button type="submit" onclick="showLoading();" style="font-size:13px;color:#ba4b1d;background:none;border:none;cursor:pointer;font-weight:500;font-family:'Inter',sans-serif;">Regenerate</button>
             </form>
             <button hx-post="/recordings/<%= recording.id %>/distribution/approve/<%= o.key %>" hx-target="#status-<%= o.key %>" hx-swap="innerHTML" style="background:#ba4b1d;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Approve</button>
-            <button hx-post="/recordings/<%= recording.id %>/distribution/feedback" hx-vals='{"content_type":"<%= o.key %>","rating":"1"}' hx-swap="none" style="background:none;border:1px solid #c7c4d8;padding:4px 10px;border-radius:6px;font-size:14px;cursor:pointer;" title="Good">👍</button>
-            <button hx-post="/recordings/<%= recording.id %>/distribution/feedback" hx-vals='{"content_type":"<%= o.key %>","rating":"-1"}' hx-swap="none" style="background:none;border:1px solid #c7c4d8;padding:4px 10px;border-radius:6px;font-size:14px;cursor:pointer;" title="Not good">👎</button>
           </div>
         </div>
       <% } %>
     </div>
 
     <% if (hasContent) { %>
+      <!-- Feedback bar: note + rating, feeds prompt tuning on Taste Prompts -->
+      <div style="padding:12px 24px;border-bottom:1px solid #f0e6e0;background:#fcf2eb;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:600;color:#777587;font-family:'Inter',sans-serif;">Feedback:</span>
+        <input id="fb-note-<%= o.key %>" name="note" type="text" placeholder="What's good or off about this output? (optional)" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #c7c4d8;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;color:#1f1b17;background:#fff;">
+        <button hx-post="/recordings/<%= recording.id %>/distribution/feedback" hx-vals='{"content_type":"<%= o.key %>","rating":"1"}' hx-include="#fb-note-<%= o.key %>" hx-target="#fb-status-<%= o.key %>" hx-swap="innerHTML" style="background:none;border:1px solid #c7c4d8;padding:5px 12px;border-radius:6px;font-size:14px;cursor:pointer;" title="Good">👍</button>
+        <button hx-post="/recordings/<%= recording.id %>/distribution/feedback" hx-vals='{"content_type":"<%= o.key %>","rating":"-1"}' hx-include="#fb-note-<%= o.key %>" hx-target="#fb-status-<%= o.key %>" hx-swap="innerHTML" style="background:none;border:1px solid #c7c4d8;padding:5px 12px;border-radius:6px;font-size:14px;cursor:pointer;" title="Not good">👎</button>
+        <span id="fb-status-<%= o.key %>"></span>
+      </div>
       <%- include('partials/output-panel', { editUrl: `/recordings/${recording.id}/distribution/edit/${o.key}`, platform: o.key, content: content }) %>
     <% } else { %>
       <!-- Not generated yet: per-output generate -->

@@ -162,6 +162,10 @@ db.exec(`
 try { db.exec(`ALTER TABLE episodes ADD COLUMN recording_id INTEGER`); } catch { /* already exists */ }
 try { db.exec(`ALTER TABLE editorial_sessions ADD COLUMN recording_id INTEGER`); } catch { /* already exists */ }
 
+// Manual feedback loop: free-text note + prompt version attribution on feedback
+try { db.exec(`ALTER TABLE content_feedback ADD COLUMN note TEXT`); } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE content_feedback ADD COLUMN prompt_version INTEGER DEFAULT 0`); } catch { /* already exists */ }
+
 // Migrate existing episodes → create a recording for each orphaned episode
 {
   const orphaned = db.prepare(`SELECT * FROM episodes WHERE recording_id IS NULL`).all();
