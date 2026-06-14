@@ -28,11 +28,13 @@ function getSession(recordingId) {
 // ─── GET /recordings ──────────────────────────────────────────────────────────
 
 router.get('/recordings', (req, res) => {
+  // has_content = any distribution output generated (registry-driven, not just rahul_x)
+  const distCols = getOutputs('distribution').map((o) => `e.${o.dbColumn}`).join(', ');
   const recordings = db.prepare(`
     SELECT r.*,
       es.status as editorial_status,
       CASE WHEN e.id IS NOT NULL THEN 1 ELSE 0 END as has_episode,
-      CASE WHEN e.rahul_x IS NOT NULL THEN 1 ELSE 0 END as has_content
+      CASE WHEN COALESCE(${distCols}) IS NOT NULL THEN 1 ELSE 0 END as has_content
     FROM recordings r
     LEFT JOIN editorial_sessions es ON es.recording_id = r.id
     LEFT JOIN episodes e ON e.recording_id = r.id
