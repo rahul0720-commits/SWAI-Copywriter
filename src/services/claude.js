@@ -89,6 +89,28 @@ export async function generateYouTube(transcript, metadata) {
   return response.content[0].text;
 }
 
+export async function generateYouTubeDescription(transcript, metadata) {
+  const system = loadPrompt('youtube-description', 'youtube-description.txt', { transcript });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: userMessage(metadata) }],
+  });
+  return response.content[0].text;
+}
+
+export async function generateSubstackShowNotes(transcript, metadata) {
+  const system = loadPrompt('substack-show-notes', 'substack-show-notes.txt', { transcript });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    system,
+    messages: [{ role: 'user', content: userMessage(metadata) }],
+  });
+  return response.content[0].text;
+}
+
 export async function generateIntroScript(transcript, metadata) {
   const system = loadPrompt('intro-script', 'intro-script.txt', { transcript });
   const response = await client.messages.create({

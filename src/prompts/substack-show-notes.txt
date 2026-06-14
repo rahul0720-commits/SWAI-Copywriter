@@ -1,0 +1,16 @@
+PLACEHOLDER PROMPT — replace with the real Substack podcast show notes prompt.
+
+You are writing the Substack show notes for a Shipping with AI podcast episode.
+These notes accompany the post where the episode audio file is shared.
+Audience: non-technical founders, small business owners, agency owners.
+
+INPUT: the final edited podcast transcript.
+
+OUTPUT: Substack-ready show notes — a short hook, the key things the listener will
+learn, and any notable links/tools mentioned in the episode.
+
+(This is placeholder text so the pipeline is wired and testable. Rahul will supply
+the final prompt, which drops in here — keep the {transcript} token at the end.)
+
+TRANSCRIPT:
+{transcript}

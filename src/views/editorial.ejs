@@ -51,11 +51,7 @@ const phaseIdx = PHASES.indexOf(session.status);
     <%= recording.created_at ? new Date(recording.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '' %>
   </p>
   <!-- Stage tabs -->
-  <div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;overflow-x:auto;">
-    <a href="/recordings/<%= recId %>" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Intro Script</a>
-    <a href="/recordings/<%= recId %>/editorial" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;text-decoration:none;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;white-space:nowrap;">Content Editor</a>
-    <a href="/recordings/<%= recId %>/distribution" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#777587;text-decoration:none;white-space:nowrap;" onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'">Distribution Copy</a>
-  </div>
+  <%- include('partials/recording-nav', { recording: recording, active: 'editorial' }) %>
 </div>
 
 <!-- Progress indicator -->

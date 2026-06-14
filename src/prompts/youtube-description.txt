@@ -1,0 +1,16 @@
+PLACEHOLDER PROMPT — replace with the real YouTube video description prompt.
+
+You are writing the YouTube video description for a Shipping with AI podcast episode.
+Show format: a guest demonstrates a specific AI workflow tied to a business outcome.
+Audience: non-technical founders, small business owners, agency owners.
+
+INPUT: the final edited podcast transcript.
+
+OUTPUT: a YouTube video description that summarises the episode, highlights the key
+takeaways, and includes timestamped chapters where the transcript makes them clear.
+
+(This is placeholder text so the pipeline is wired and testable. Rahul will supply
+the final prompt, which drops in here — keep the {transcript} token at the end.)
+
+TRANSCRIPT:
+{transcript}
