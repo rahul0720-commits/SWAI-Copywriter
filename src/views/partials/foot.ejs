@@ -6,7 +6,11 @@
   const path = window.location.pathname;
   document.querySelectorAll('[data-nav]').forEach(el => {
     const nav = el.dataset.nav;
-    if (nav === 'recordings' && (path === '/recordings' || path.startsWith('/recordings/'))) {
+    if (nav === 'distribution' && (path === '/distribution' || path.endsWith('/distribution'))) {
+      el.classList.add('active');
+    } else if (nav === 'post-production' && (path === '/recordings' || (path.startsWith('/recordings/') && !path.endsWith('/distribution')))) {
+      el.classList.add('active');
+    } else if (nav === 'history' && path.startsWith('/history')) {
       el.classList.add('active');
     } else if (nav === 'prompts' && path.startsWith('/settings/prompts')) {
       el.classList.add('active');

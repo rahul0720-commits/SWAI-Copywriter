@@ -1,0 +1,70 @@
+<%- include('partials/head', { title: 'History' }) %>
+
+<!-- Page header -->
+<div style="margin-bottom:32px;">
+  <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0;">History</h1>
+  <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:4px 0 0;">Everything produced per episode — intro script, final transcript, and distribution outputs.</p>
+</div>
+
+<% if (episodes.length === 0) { %>
+  <div style="text-align:center;padding:80px 0;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;">
+    <svg width="40" height="40" fill="none" stroke="#c7c4d8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 6px;">Nothing produced yet</p>
+    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#c7c4d8;margin:0;">Generated intros, transcripts, and distribution copy will be archived here.</p>
+  </div>
+<% } else { %>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <% episodes.forEach(ep => {
+      const blocks = [];
+      if (ep.intro_script) blocks.push({ id: 'intro', label: 'Intro Script', content: ep.intro_script });
+      if (ep.transcript_v2) blocks.push({ id: 'v2', label: 'Final Transcript (v2)', content: ep.transcript_v2 });
+      ep.outputs.forEach(o => blocks.push({ id: o.key, label: o.label, content: o.content }));
+    %>
+      <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;overflow:hidden;">
+        <!-- Episode header -->
+        <div style="padding:18px 22px;border-bottom:1px solid #f0e6e0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="min-width:0;">
+            <h2 style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#1f1b17;margin:0 0 2px;letter-spacing:-0.01em;"><%= ep.title %></h2>
+            <p style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;margin:0;">
+              <% if (ep.guest_name) { %>with <%= ep.guest_name %> &middot; <% } %>
+              <%= ep.created_at ? new Date(ep.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '' %>
+              &middot; <%= blocks.length %> item<%= blocks.length === 1 ? '' : 's' %>
+            </p>
+          </div>
+          <a href="/recordings/<%= ep.id %>/distribution" style="font-size:13px;font-weight:500;color:#ba4b1d;text-decoration:none;white-space:nowrap;">Open →</a>
+        </div>
+
+        <!-- Content blocks -->
+        <div style="padding:8px 0;">
+          <% blocks.forEach(b => { const bid = `h-${ep.id}-${b.id}`; %>
+            <details style="border-bottom:1px solid #f6ece6;">
+              <summary style="padding:12px 22px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#464555;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+                <span style="display:flex;align-items:center;gap:8px;">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                  <%= b.label %>
+                </span>
+                <button onclick="event.preventDefault();event.stopPropagation();copyHistory('<%= bid %>', this)" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;background:#f0e6e0;color:#8c3213;border:none;cursor:pointer;font-family:'Inter',sans-serif;">Copy</button>
+              </summary>
+              <pre id="<%= bid %>" style="margin:0;padding:0 22px 16px;font-family:'Space Grotesk',monospace;font-size:12px;color:#1f1b17;white-space:pre-wrap;line-height:1.6;max-height:420px;overflow-y:auto;"><%= b.content %></pre>
+            </details>
+          <% }); %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<script>
+function copyHistory(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+</script>
+
+<%- include('partials/foot') %>

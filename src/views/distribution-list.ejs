@@ -1,0 +1,61 @@
+<%- include('partials/head', { title: 'Distribution' }) %>
+
+<!-- Page header -->
+<div style="margin-bottom:32px;">
+  <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0;">Distribution</h1>
+  <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:4px 0 0;">Final transcript → distribution copy. Recordings that have a final transcript set show up here.</p>
+</div>
+
+<% if (recordings.length === 0) { %>
+  <div style="text-align:center;padding:80px 0;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;">
+    <svg width="40" height="40" fill="none" stroke="#c7c4d8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 6px;">Nothing ready for distribution yet</p>
+    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#c7c4d8;margin:0;">Set a final transcript on a recording (in <a href="/recordings" style="color:#ba4b1d;text-decoration:none;">Post-production</a> → Distribution Copy) and it'll appear here.</p>
+  </div>
+<% } else { %>
+
+  <!-- Column headers -->
+  <div style="display:grid;grid-template-columns:1fr 140px 130px 130px 110px;gap:12px;padding:0 16px 10px;align-items:center;" class="dist-header">
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Episode</span>
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Guest</span>
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;">Date</span>
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;text-align:center;">Generated</span>
+    <span style="font-size:12px;font-weight:600;color:#777587;letter-spacing:0.04em;text-transform:uppercase;text-align:center;">Approved</span>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <% recordings.forEach(rec => {
+      const allApproved = rec.approved === rec.total;
+      const someGen = rec.generated > 0;
+    %>
+      <a href="/recordings/<%= rec.id %>/distribution" style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;padding:16px;display:grid;grid-template-columns:1fr 140px 130px 130px 110px;gap:12px;align-items:center;text-decoration:none;transition:border-color 0.15s;" onmouseover="this.style.borderColor='#ba4b1d'" onmouseout="this.style.borderColor='#c7c4d8'" class="dist-row">
+        <div style="min-width:0;">
+          <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:#1f1b17;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= rec.title %></div>
+        </div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:#464555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= rec.guest_name || '—' %></div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;white-space:nowrap;">
+          <%= rec.created_at ? new Date(rec.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '—' %>
+        </div>
+        <div style="text-align:center;">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:<%= someGen ? '#065f46' : '#777587' %>;background:<%= someGen ? '#d1fae5' : '#f0e6e0' %>;padding:3px 10px;border-radius:99px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:<%= someGen ? '#059669' : '#c7c4d8' %>;flex-shrink:0;"></span><%= rec.generated %>/<%= rec.total %>
+          </span>
+        </div>
+        <div style="text-align:center;">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:<%= allApproved ? '#065f46' : '#777587' %>;background:<%= allApproved ? '#d1fae5' : '#f0e6e0' %>;padding:3px 10px;border-radius:99px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:<%= allApproved ? '#059669' : '#c7c4d8' %>;flex-shrink:0;"></span><%= rec.approved %>/<%= rec.total %>
+          </span>
+        </div>
+      </a>
+    <% }); %>
+  </div>
+<% } %>
+
+<style>
+@media (max-width: 768px) {
+  .dist-header { display: none !important; }
+  .dist-row { grid-template-columns: 1fr !important; gap: 8px !important; }
+}
+</style>
+
+<%- include('partials/foot') %>

@@ -49,6 +49,73 @@ router.get('/recordings', (req, res) => {
   });
 });
 
+// ─── GET /distribution (list of recordings ready for distribution) ───────────
+
+router.get('/distribution', (req, res) => {
+  const outputs = getOutputs('distribution');
+  const cols = outputs.map((o) => `e.${o.dbColumn}, e.${o.approvedColumn}`).join(', ');
+  const rows = db.prepare(`
+    SELECT r.id AS recording_id, r.title, r.guest_name, r.created_at, ${cols}
+    FROM recordings r
+    JOIN episodes e ON e.recording_id = r.id
+    WHERE e.transcript_clean IS NOT NULL
+    ORDER BY r.created_at DESC
+  `).all();
+
+  const recordings = rows.map((row) => {
+    let generated = 0, approved = 0;
+    for (const o of outputs) {
+      if (row[o.dbColumn]) generated++;
+      if (row[o.approvedColumn]) approved++;
+    }
+    return {
+      id: row.recording_id, title: row.title, guest_name: row.guest_name,
+      created_at: row.created_at, generated, approved, total: outputs.length,
+    };
+  });
+
+  res.render('distribution-list', {
+    title: 'Distribution',
+    recordings,
+    twitterConnected: twitterConnected(),
+    linkedinConnected: linkedinConnected(),
+  });
+});
+
+// ─── GET /history (archive of everything produced per episode) ───────────────
+
+router.get('/history', (req, res) => {
+  const outputs = getOutputs('distribution');
+  const cols = outputs.map((o) => `e.${o.dbColumn}`).join(', ');
+  const rows = db.prepare(`
+    SELECT r.id AS recording_id, r.title, r.guest_name, r.created_at, r.intro_script,
+           es.transcript_v2, ${cols}
+    FROM recordings r
+    LEFT JOIN episodes e ON e.recording_id = r.id
+    LEFT JOIN editorial_sessions es ON es.recording_id = r.id
+    ORDER BY r.created_at DESC
+  `).all();
+
+  const episodes = rows.map((row) => ({
+    id: row.recording_id,
+    title: row.title,
+    guest_name: row.guest_name,
+    created_at: row.created_at,
+    intro_script: row.intro_script,
+    transcript_v2: row.transcript_v2,
+    outputs: outputs
+      .filter((o) => row[o.dbColumn])
+      .map((o) => ({ key: o.key, label: o.heading, content: row[o.dbColumn] })),
+  })).filter((ep) => ep.intro_script || ep.transcript_v2 || ep.outputs.length);
+
+  res.render('history', {
+    title: 'History',
+    episodes,
+    twitterConnected: twitterConnected(),
+    linkedinConnected: linkedinConnected(),
+  });
+});
+
 // ─── POST /recordings ─────────────────────────────────────────────────────────
 
 router.post('/recordings', upload.single('transcript'), (req, res) => {
