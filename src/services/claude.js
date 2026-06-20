@@ -26,7 +26,7 @@ function userMessage(metadata) {
 export async function generateRahulX(transcript, metadata) {
   const system = loadPrompt('rahul-x', 'rahul-x.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -37,7 +37,7 @@ export async function generateRahulX(transcript, metadata) {
 export async function generateGauthamX(transcript, metadata, mode = 'full') {
   const system = loadPrompt('gautham-x', 'gautham-x.txt', { transcript, mode });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -48,7 +48,7 @@ export async function generateGauthamX(transcript, metadata, mode = 'full') {
 export async function generateBrandX(transcript, metadata) {
   const system = loadPrompt('brand-x', 'brand-x.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -59,7 +59,7 @@ export async function generateBrandX(transcript, metadata) {
 export async function generateXArticle(transcript, metadata, hostName = 'Rahul') {
   const system = loadPrompt('x-article', 'x-article.txt', { transcript, host_name: hostName });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -70,7 +70,7 @@ export async function generateXArticle(transcript, metadata, hostName = 'Rahul')
 export async function generateLinkedIn(transcript, metadata, hostName = 'Rahul') {
   const system = loadPrompt('linkedin', 'linkedin.txt', { transcript, host_name: hostName });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -81,7 +81,7 @@ export async function generateLinkedIn(transcript, metadata, hostName = 'Rahul')
 export async function generateYouTube(transcript, metadata) {
   const system = loadPrompt('youtube', 'youtube.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -92,7 +92,7 @@ export async function generateYouTube(transcript, metadata) {
 export async function generateYouTubeDescription(transcript, metadata) {
   const system = loadPrompt('youtube-description', 'youtube-description.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -103,7 +103,7 @@ export async function generateYouTubeDescription(transcript, metadata) {
 export async function generateSubstackShowNotes(transcript, metadata) {
   const system = loadPrompt('substack-show-notes', 'substack-show-notes.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 2048,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],
@@ -114,7 +114,7 @@ export async function generateSubstackShowNotes(transcript, metadata) {
 export async function generateIntroScript(transcript, metadata) {
   const system = loadPrompt('intro-script', 'intro-script.txt', { transcript });
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     system,
     messages: [{ role: 'user', content: userMessage(metadata) }],

@@ -39,7 +39,7 @@ export async function runPass1(transcript, metadata, showCriteria) {
     .replace('{transcript}', transcript);
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     system,
     messages: [{ role: 'user', content: 'Run Pass 1 hard-cut analysis.' }],
@@ -61,7 +61,7 @@ export async function runPass2(transcript, metadata, showCriteria, keepList) {
     .replace('{transcript}', transcript);
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     system,
     messages: [{ role: 'user', content: 'Run Pass 2 soft-cut analysis.' }],
@@ -138,7 +138,7 @@ EDITOR FEEDBACK ON RECENT OUTPUTS:
 ${feedbackText}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     system,
     messages: [{ role: 'user', content: userMsg }],
@@ -188,7 +188,7 @@ EDITOR FEEDBACK:
 ${feedback}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 8192,
     system,
     messages: [{ role: 'user', content: userMsg }],
