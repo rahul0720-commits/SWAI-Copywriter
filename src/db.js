@@ -1,10 +1,13 @@
+import 'dotenv/config';
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dbDir = join(__dirname, '..', 'data');
+// Store the DB in DATA_DIR when set (point this at a mounted Railway volume so
+// data survives deploys). Falls back to the repo-local ./data for local dev.
+const dbDir = process.env.DATA_DIR || join(__dirname, '..', 'data');
 mkdirSync(dbDir, { recursive: true });
 
 const db = new Database(join(dbDir, 'uvc.db'));
