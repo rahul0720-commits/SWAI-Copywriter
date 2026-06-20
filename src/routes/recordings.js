@@ -198,12 +198,16 @@ router.post('/recordings/:id/intro/generate', upload.single('transcript'), async
     res.redirect(`/recordings/${recording.id}`);
   } catch (err) {
     console.error('Intro script generation error:', err);
+    const authish = /authentication|api[_-]?key|x-api-key|401|credit|billing/i.test(err.message || '');
+    const error = authish
+      ? `Claude API error — check the ANTHROPIC_API_KEY (and account credits) on the server. (${err.message})`
+      : `Generation failed: ${err.message}`;
     res.render('recording', {
       title: `${recording.title} — Intro Script`,
       recording,
       episode: getEpisode(recording.id),
       session: getSession(recording.id),
-      error: 'Generation failed. Please try again.',
+      error,
     });
   }
 });
