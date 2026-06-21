@@ -152,65 +152,6 @@
       </a>
     </nav>
 
-    <!-- Host setting -->
-    <div style="padding:12px 20px 16px;border-top:1px solid #c7c4d8;">
-      <div style="font-size:11px;font-weight:600;color:#777587;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Host</div>
-      <div style="display:flex;gap:6px;">
-        <button id="host-btn-Rahul" onclick="setHost('Rahul')" style="flex:1;padding:6px 10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:1px solid #c7c4d8;cursor:pointer;transition:all 0.1s;">Rahul</button>
-        <button id="host-btn-Gautham" onclick="setHost('Gautham')" style="flex:1;padding:6px 10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border:1px solid #c7c4d8;cursor:pointer;transition:all 0.1s;">Gautham</button>
-      </div>
-    </div>
-    <script>
-    (function() {
-      function applyHostButtons(name) {
-        ['Rahul','Gautham'].forEach(function(h) {
-          var btn = document.getElementById('host-btn-' + h);
-          if (!btn) return;
-          if (h === name) {
-            btn.style.background = '#fde8d6'; btn.style.color = '#8c3213'; btn.style.borderColor = '#ba4b1d';
-          } else {
-            btn.style.background = ''; btn.style.color = '#464555'; btn.style.borderColor = '#c7c4d8';
-          }
-        });
-      }
-      window.setHost = function(name) {
-        localStorage.setItem('swai_host', name);
-        applyHostButtons(name);
-        if (typeof updateHostTabs === 'function') updateHostTabs(name);
-      };
-      var _h = localStorage.getItem('swai_host') || 'Rahul';
-      document.addEventListener('DOMContentLoaded', function() { applyHostButtons(_h); });
-    })();
-    </script>
-
-    <!-- Social status -->
-    <% if (typeof twitterConnected !== 'undefined') { %>
-    <div style="padding:16px 20px; border-top:1px solid #c7c4d8;">
-      <div style="font-size:11px; font-weight:600; color:#777587; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;">Connections</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-size:13px; color:#464555; font-weight:500;">Twitter / X</span>
-          <% if (twitterConnected) { %>
-            <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#059669;background:#d1fae5;padding:2px 8px;border-radius:99px;font-weight:500;">
-              <span class="status-dot" style="background:#059669;"></span>Connected
-            </span>
-          <% } else { %>
-            <a href="/auth/twitter" style="font-size:12px;color:#ba4b1d;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #ba4b1d;border-radius:6px;">Connect</a>
-          <% } %>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-size:13px; color:#464555; font-weight:500;">LinkedIn</span>
-          <% if (linkedinConnected) { %>
-            <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#059669;background:#d1fae5;padding:2px 8px;border-radius:99px;font-weight:500;">
-              <span class="status-dot" style="background:#059669;"></span>Connected
-            </span>
-          <% } else { %>
-            <a href="/auth/linkedin" style="font-size:12px;color:#ba4b1d;text-decoration:none;font-weight:500;padding:2px 8px;border:1px solid #ba4b1d;border-radius:6px;">Connect</a>
-          <% } %>
-        </div>
-      </div>
-    </div>
-    <% } %>
   </aside>
 
   <!-- Main content -->

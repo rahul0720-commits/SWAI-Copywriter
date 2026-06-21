@@ -71,7 +71,7 @@
       else if (approved)    { c='#065f46'; bg='#d1fae5'; dot='#059669'; }
       else                  { c='#777587'; bg='#f0e6e0'; dot='#c7c4d8'; }
     %>
-      <span data-host="<%= o.host || '' %>" class="status-pill" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:<%= c %>;background:<%= bg %>;padding:4px 10px;border-radius:99px;">
+      <span class="status-pill" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:<%= c %>;background:<%= bg %>;padding:4px 10px;border-radius:99px;">
         <span style="width:7px;height:7px;border-radius:50%;background:<%= dot %>;flex-shrink:0;"></span>
         <%= o.tabLabel %>
       </span>
@@ -91,7 +91,7 @@
 <!-- Tabs (one per output, derived from registry) -->
 <div style="border-bottom:1px solid #c7c4d8;margin-bottom:24px;display:flex;gap:4px;overflow-x:auto;">
   <% outputs.forEach(function(o) { %>
-    <button onclick="switchTab('<%= o.key %>')" class="tab-btn" id="tab-<%= o.key %>" data-host="<%= o.host || '' %>" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;"><%= o.tabLabel %></button>
+    <button onclick="switchTab('<%= o.key %>')" class="tab-btn" id="tab-<%= o.key %>" style="padding:10px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#777587;background:none;border:none;cursor:pointer;white-space:nowrap;"><%= o.tabLabel %></button>
   <% }); %>
 </div>
 
@@ -184,31 +184,13 @@ function copyContent(platform) {
   });
 }
 
-// Show only the active host's personal-X tab/pill (Rahul vs Gautham).
-function updateHostTabs(host) {
-  const isRahul = host === 'Rahul';
-  document.querySelectorAll('[data-host="rahul"]').forEach(el => el.style.display = isRahul ? '' : 'none');
-  document.querySelectorAll('[data-host="gautham"]').forEach(el => el.style.display = isRahul ? 'none' : '');
-  const active = document.querySelector('.tab-btn.active');
-  if (active && active.style.display === 'none') {
-    const first = [...document.querySelectorAll('.tab-btn')].find(b => b.style.display !== 'none');
-    if (first) switchTab(first.id.replace('tab-', ''));
-  }
-}
-
-document.querySelectorAll('.host-name-field').forEach(el => {
-  el.value = localStorage.getItem('swai_host') || 'Rahul';
-});
-
 document.getElementById('dist-transcript-input')?.addEventListener('change', function() {
   document.getElementById('dist-transcript-name').textContent = this.files[0]?.name || 'No file chosen';
 });
 
 (function() {
-  const host = localStorage.getItem('swai_host') || 'Rahul';
-  updateHostTabs(host);
-  const firstVisible = [...document.querySelectorAll('.tab-btn')].find(b => b.style.display !== 'none');
-  if (firstVisible) switchTab(firstVisible.id.replace('tab-', ''));
+  const first = document.querySelector('.tab-btn');
+  if (first) switchTab(first.id.replace('tab-', ''));
 })();
 </script>
 
