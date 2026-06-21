@@ -77,82 +77,46 @@
     :focus-visible { outline: 2px solid #ba4b1d; outline-offset: 2px; }
     input:focus, textarea:focus { border-color: #ba4b1d !important; box-shadow: 0 0 0 3px rgba(196,87,26,0.12); outline: none; }
 
-    /* Mobile sidebar overlay */
-    #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; }
-    #sidebar-overlay.open { display: block; }
-    #app-sidebar { transition: transform 0.2s ease; }
+    /* Top nav */
+    .topnav-link { display:inline-flex; align-items:center; padding:8px 14px; border-radius:6px; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:#464555; text-decoration:none; white-space:nowrap; transition:background 0.12s, color 0.12s; }
+    .topnav-link:hover { background:#f6ece6; color:#1f1b17; }
+    .topnav-link.active { background:#fde8d6; color:#8c3213; font-weight:600; }
 
-    @media (max-width: 768px) {
-      #app-sidebar {
-        position: fixed !important;
-        top: 0; left: 0; bottom: 0;
-        z-index: 50;
-        transform: translateX(-100%);
-      }
-      #app-sidebar.open { transform: translateX(0); }
-      #mobile-header { display: flex !important; }
-      #main-content { padding: 16px !important; }
+    @media (max-width: 860px) {
+      #top-nav { display: none !important; }
+      #mobile-nav-toggle { display: inline-flex !important; }
+      #main-content { padding: 20px 16px !important; }
     }
   </style>
 </head>
 <body style="background:#ece1cd; color:#1f1b17;" class="min-h-screen">
 
-<!-- Mobile header bar -->
-<div id="mobile-header" style="display:none;position:sticky;top:0;z-index:30;background:#ffffff;border-bottom:1px solid #c7c4d8;padding:12px 16px;align-items:center;justify-content:space-between;gap:12px;">
-  <button onclick="openSidebar()" style="background:none;border:none;cursor:pointer;color:#464555;padding:4px;display:flex;align-items:center;" aria-label="Open menu">
-    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <a href="/recordings" style="text-decoration:none;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;color:#1f1b17;letter-spacing:-0.01em;">SWAI Copywriter</a>
-  <div style="width:30px;"></div>
-</div>
-
-<!-- Sidebar overlay (mobile) -->
-<div id="sidebar-overlay" onclick="closeSidebar()"></div>
-
-<div class="flex min-h-screen">
-
-  <!-- Sidebar -->
-  <aside id="app-sidebar" style="width:260px; background:#ffffff; border-right:1px solid #c7c4d8; flex-shrink:0; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto;">
-    <!-- Logo -->
-    <div style="padding:20px 20px 14px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="/recordings" style="text-decoration:none;">
-        <div style="font-family:'Inter',sans-serif; font-weight:700; font-size:16px; color:#1f1b17; letter-spacing:-0.01em;">SWAI Copywriter</div>
-        <div style="font-size:11px; color:#777587; margin-top:2px; font-family:'Inter',sans-serif;">Shipping with AI Podcast</div>
-      </a>
-      <!-- Close button (mobile only) -->
-      <button onclick="closeSidebar()" style="background:none;border:none;cursor:pointer;color:#777587;padding:4px;display:none;" id="sidebar-close-btn" aria-label="Close menu">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div style="height:1px; background:#c7c4d8; margin:0 20px;"></div>
-
-    <!-- Nav -->
-    <nav style="padding:14px 12px; flex:1;">
-      <div style="font-size:11px; font-weight:600; color:#777587; letter-spacing:0.08em; text-transform:uppercase; padding:0 12px; margin-bottom:8px;">Workspace</div>
-      <a href="/recordings" class="nav-link" data-nav="post-production">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        Post-production
-      </a>
-      <a href="/distribution" class="nav-link" data-nav="distribution" style="margin-top:2px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Distribution
-      </a>
-      <a href="/history" class="nav-link" data-nav="history" style="margin-top:2px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
-        History
-      </a>
-      <a href="/settings/prompts" class="nav-link" data-nav="prompts" style="margin-top:2px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        Taste Prompts
-      </a>
-      <a href="/settings/editorial" class="nav-link" data-nav="editorial-settings" style="margin-top:2px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Editorial Settings
-      </a>
+<!-- Top nav -->
+<header style="position:sticky;top:0;z-index:30;background:#ffffff;border-bottom:1px solid #c7c4d8;">
+  <div style="max-width:1240px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px;height:60px;">
+    <a href="/recordings" style="text-decoration:none;display:flex;flex-direction:column;flex-shrink:0;line-height:1.15;">
+      <span style="font-family:'Inter',sans-serif;font-weight:700;font-size:16px;color:#1f1b17;letter-spacing:-0.01em;">SWAI Copywriter</span>
+      <span style="font-size:11px;color:#777587;font-family:'Inter',sans-serif;">Shipping with AI Podcast</span>
+    </a>
+    <nav id="top-nav" style="display:flex;align-items:center;gap:4px;flex:1;">
+      <a href="/recordings" class="topnav-link" data-nav="post-production">Post-production</a>
+      <a href="/distribution" class="topnav-link" data-nav="distribution">Distribution</a>
+      <a href="/history" class="topnav-link" data-nav="history">History</a>
+      <a href="/settings/prompts" class="topnav-link" data-nav="prompts">Taste Prompts</a>
+      <a href="/settings/editorial" class="topnav-link" data-nav="editorial-settings">Editorial Settings</a>
     </nav>
+    <button id="mobile-nav-toggle" onclick="var m=document.getElementById('mobile-nav');m.style.display=(m.style.display==='flex'?'none':'flex');" style="display:none;background:none;border:none;cursor:pointer;color:#464555;padding:4px;margin-left:auto;" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <nav id="mobile-nav" style="display:none;flex-direction:column;gap:2px;border-top:1px solid #f0e6e0;padding:8px 16px;">
+    <a href="/recordings" class="topnav-link" data-nav="post-production">Post-production</a>
+    <a href="/distribution" class="topnav-link" data-nav="distribution">Distribution</a>
+    <a href="/history" class="topnav-link" data-nav="history">History</a>
+    <a href="/settings/prompts" class="topnav-link" data-nav="prompts">Taste Prompts</a>
+    <a href="/settings/editorial" class="topnav-link" data-nav="editorial-settings">Editorial Settings</a>
+  </nav>
+</header>
 
-  </aside>
-
-  <!-- Main content -->
-  <main id="main-content" style="flex:1; padding:40px 48px; overflow-y:auto; min-width:0;">
+<!-- Main content -->
+<main id="main-content" style="max-width:1240px;margin:0 auto;padding:32px 24px;">

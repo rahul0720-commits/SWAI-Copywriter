@@ -82,6 +82,32 @@ router.get('/distribution', (req, res) => {
   });
 });
 
+// ─── POST /distribution (start distribution from a fresh final transcript) ───
+// Creates an episode that skipped in-tool post-production: a recording (the episode
+// spine, no raw transcript) plus a linked episode holding the uploaded final
+// transcript. Stays linked so History shows it under one episode.
+
+router.post('/distribution', upload.single('transcript'), (req, res) => {
+  const body = req.body || {};
+  if (!body.title?.trim()) return res.redirect('/distribution');
+
+  let transcriptClean = null;
+  if (req.file) transcriptClean = parseTranscript(req.file.buffer, req.file.originalname);
+
+  const rec = db.prepare(`
+    INSERT INTO recordings (title, guest_name, recording_date, created_at, updated_at)
+    VALUES (?, ?, ?, datetime('now'), datetime('now'))
+  `).run(body.title.trim(), body.guest_name?.trim() || null, body.recording_date || null);
+  const rid = rec.lastInsertRowid;
+
+  db.prepare(`
+    INSERT INTO episodes (title, guest_name, recording_date, transcript_clean, recording_id, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+  `).run(body.title.trim(), body.guest_name?.trim() || null, body.recording_date || null, transcriptClean, rid);
+
+  res.redirect(`/recordings/${rid}/distribution`);
+});
+
 // ─── GET /history (archive of everything produced per episode) ───────────────
 
 router.get('/history', (req, res) => {

@@ -6,17 +6,19 @@
     <h1 style="font-family:'Inter',sans-serif;font-size:28px;font-weight:700;color:#1f1b17;letter-spacing:-0.02em;margin:0;">Post-production</h1>
     <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:4px 0 0;">Raw transcript → intro script and Content Editor. Start a recording here.</p>
   </div>
+  <% if (recordings.length > 0) { %>
   <button onclick="toggleNewForm()" id="new-recording-btn" style="display:flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    New Recording
+    Start Post-production
   </button>
+  <% } %>
 </div>
 
 <!-- New recording form (hidden by default) -->
 <div id="new-form-panel" style="display:none;margin-bottom:28px;">
   <div style="background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;padding:28px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <h2 style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">New Recording</h2>
+      <h2 style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0;">Start Post-production</h2>
       <button onclick="toggleNewForm()" style="background:none;border:none;cursor:pointer;color:#777587;padding:4px;">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
@@ -46,7 +48,7 @@
         </div>
       </div>
       <div style="display:flex;gap:10px;">
-        <button type="submit" style="background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Create Recording →</button>
+        <button type="submit" style="background:#ba4b1d;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Start Post-production →</button>
         <button type="button" onclick="toggleNewForm()" style="background:none;color:#464555;border:1px solid #c7c4d8;padding:10px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">Cancel</button>
       </div>
     </form>
@@ -55,10 +57,14 @@
 
 <!-- Recordings list -->
 <% if (recordings.length === 0) { %>
-  <div style="text-align:center;padding:80px 0;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;">
+  <div id="empty-state" style="text-align:center;padding:72px 24px;background:#ffffff;border:1px solid #c7c4d8;border-radius:8px;">
     <svg width="40" height="40" fill="none" stroke="#c7c4d8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-    <p style="font-family:'Inter',sans-serif;font-size:15px;color:#777587;margin:0 0 6px;">No recordings yet</p>
-    <p style="font-family:'Inter',sans-serif;font-size:13px;color:#c7c4d8;margin:0;">Click "New Recording" to get started.</p>
+    <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1f1b17;margin:0 0 6px;">No episodes yet</p>
+    <p style="font-family:'Inter',sans-serif;font-size:14px;color:#777587;margin:0 0 20px;max-width:420px;margin-left:auto;margin-right:auto;">Start post-production on your first episode — upload a raw transcript, generate the intro, and run the Content Editor.</p>
+    <button onclick="toggleNewForm()" style="display:inline-flex;align-items:center;gap:8px;background:#ba4b1d;color:#fff;border:none;padding:11px 22px;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Start Post-production
+    </button>
   </div>
 <% } else { %>
 
@@ -154,6 +160,8 @@ function toggleNewForm() {
   const panel = document.getElementById('new-form-panel');
   const isHidden = panel.style.display === 'none';
   panel.style.display = isHidden ? 'block' : 'none';
+  const empty = document.getElementById('empty-state');
+  if (empty) empty.style.display = isHidden ? 'none' : '';
   if (isHidden) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

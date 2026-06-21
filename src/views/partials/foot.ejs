@@ -1,5 +1,4 @@
   </main>
-</div>
 
 <script>
   // Active nav highlighting
@@ -18,20 +17,6 @@
       el.classList.add('active');
     }
   });
-
-  // Mobile sidebar
-  function openSidebar() {
-    document.getElementById('app-sidebar').classList.add('open');
-    document.getElementById('sidebar-overlay').classList.add('open');
-    document.getElementById('sidebar-close-btn').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-  }
-  function closeSidebar() {
-    document.getElementById('app-sidebar').classList.remove('open');
-    document.getElementById('sidebar-overlay').classList.remove('open');
-    document.getElementById('sidebar-close-btn').style.display = 'none';
-    document.body.style.overflow = '';
-  }
 </script>
 </body>
 </html>

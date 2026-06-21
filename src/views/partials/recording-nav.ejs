@@ -1,28 +1,12 @@
 <%
-// Grouped stage nav. Params: recording, active ('intro' | 'editorial' | 'distribution')
-const navGroups = [
-  { label: 'Post-production', tabs: [
-    { key: 'intro',        name: 'Intro Script',     href: `/recordings/${recording.id}` },
-    { key: 'editorial',    name: 'Content Editor',   href: `/recordings/${recording.id}/editorial` },
-  ]},
-  { label: 'Distribution', tabs: [
-    { key: 'distribution', name: 'Distribution Copy', href: `/recordings/${recording.id}/distribution` },
-  ]},
+// Post-production stage tabs for a recording. Params: recording, active ('intro' | 'editorial')
+const tabs = [
+  { key: 'intro',     name: 'Intro Script',   href: `/recordings/${recording.id}` },
+  { key: 'editorial', name: 'Content Editor', href: `/recordings/${recording.id}/editorial` },
 ];
 %>
-<div style="display:flex;gap:28px;align-items:flex-end;border-bottom:2px solid #c7c4d8;overflow-x:auto;">
-  <% navGroups.forEach(function(group, gi) { %>
-    <% if (gi > 0) { %>
-      <div style="width:1px;align-self:stretch;background:#e5e1ee;margin:6px 0 8px;"></div>
-    <% } %>
-    <div style="display:flex;flex-direction:column;gap:5px;">
-      <span style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#a8a4b8;padding:0 18px;white-space:nowrap;"><%= group.label %></span>
-      <div style="display:flex;gap:0;">
-        <% group.tabs.forEach(function(tab) { %>
-          <% var isActive = tab.key === active; %>
-          <a href="<%= tab.href %>" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:<%= isActive ? '600' : '500' %>;color:<%= isActive ? '#ba4b1d' : '#777587' %>;text-decoration:none;white-space:nowrap;<%= isActive ? 'border-bottom:2px solid #ba4b1d;margin-bottom:-2px;' : '' %>"<% if (!isActive) { %> onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'"<% } %>><%= tab.name %></a>
-        <% }); %>
-      </div>
-    </div>
+<div style="display:flex;gap:0;border-bottom:2px solid #c7c4d8;overflow-x:auto;">
+  <% tabs.forEach(function(tab) { var isActive = tab.key === active; %>
+    <a href="<%= tab.href %>" style="padding:8px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:<%= isActive ? '600' : '500' %>;color:<%= isActive ? '#ba4b1d' : '#777587' %>;text-decoration:none;white-space:nowrap;<%= isActive ? 'border-bottom:2px solid #ba4b1d;margin-bottom:-2px;' : '' %>"<% if (!isActive) { %> onmouseover="this.style.color='#1f1b17'" onmouseout="this.style.color='#777587'"<% } %>><%= tab.name %></a>
   <% }); %>
 </div>

@@ -22,7 +22,12 @@
     <% if (recording.guest_name) { %>with <%= recording.guest_name %> &middot; <% } %>
     <%= recording.created_at ? new Date(recording.created_at).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '' %>
   </p>
-  <%- include('partials/recording-nav', { recording: recording, active: 'distribution' }) %>
+  <div style="display:flex;align-items:center;gap:16px;border-bottom:2px solid #c7c4d8;">
+    <span style="padding:8px 0;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#ba4b1d;border-bottom:2px solid #ba4b1d;margin-bottom:-2px;">Distribution Copy</span>
+    <% if (recording.raw_transcript || recording.intro_script) { %>
+      <a href="/recordings/<%= recording.id %>" style="font-family:'Inter',sans-serif;font-size:13px;color:#777587;text-decoration:none;" onmouseover="this.style.color='#ba4b1d'" onmouseout="this.style.color='#777587'">← View post-production</a>
+    <% } %>
+  </div>
 </div>
 
 <% if (!episode || !episode.transcript_clean) { %>
